@@ -1,0 +1,1267 @@
+Microsoft Windows [Version 10.0.26100.8037]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\user>docker start mongo-noseclab
+mongo-noseclab
+
+C:\Users\user>docker exec -it mongo-noseclab mongosh
+Current Mongosh Log ID: 69c4f671db9b4cfd53d805da
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T08:54:28.588+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+   2026-03-26T08:54:30.484+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+test> use noseclab
+switched to db noseclab
+noseclab> show dbs
+|
+| // Les collections ?
+| show collections
+|
+| // Combien de documents ?
+| db.security_logs.countDocuments()
+|
+| // Aperçu d'un document
+| db.security_logs.findOne()
+admin      40.00 KiB
+config    108.00 KiB
+local      72.00 KiB
+noseclab   72.00 KiB
+noseclab> show dbs
+| show collections
+| db.security_logs.countDocuments()
+| db.security_logs.findOne()
+admin      40.00 KiB
+config    108.00 KiB
+local      72.00 KiB
+noseclab   72.00 KiB
+noseclab> exit
+
+C:\Users\user>docker rm -f mongo_insecure 2>/dev/null
+The system cannot find the path specified.
+
+C:\Users\user>docker run -d --name mongo_insecure -p 27017:27017 mongo:7
+745b662b30fb15cc05752cc63eb58f1eb9274ab4a1a33b9f46b42bc8a2a01db6
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_insecure (1f54a9730af0eab3d86699dd378e2f4a7cb4eff8eb592be63bcd37aa2474ef2e): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker run -d --name mongo_insecure -p 27018:27017 mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_insecure" is already in use by container "745b662b30fb15cc05752cc63eb58f1eb9274ab4a1a33b9f46b42bc8a2a01db6". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker rm -f mongo_insecure
+mongo_insecure
+
+C:\Users\user>docker run -d --name mongo_insecure -p 27018:27017 mongo:7
+49cb8a126189eac378cf0995cfa7290c4cd4d1cf0ad8bbb4b784771efaebf39d
+
+C:\Users\user>mongosh "mongodb://localhost:27017"
+'mongosh' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>docker exec -it mongo_insecure mongosh
+Current Mongosh Log ID: 69c4f830d484cd3ca2d805da
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:10:35.952+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+   2026-03-26T09:10:36.834+00:00: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+test> mongosh "mongodb://localhost:27017"
+Uncaught:
+SyntaxError: Missing semicolon. (1:7)
+
+> 1 | mongosh "mongodb://localhost:27017"
+    |        ^
+  2 |
+
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.insertOne({
+|   timestamp: new Date(),
+|   source_ip: "10.0.0.99",
+|   event_type: "test_insecure",
+|   message: "Ce document a été inséré sans authentification"
+| })
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c4f853d484cd3ca2d805db')
+}
+soc_lite> db.security_logs.find({ event_type: "test_insecure" })
+[
+  {
+    _id: ObjectId('69c4f853d484cd3ca2d805db'),
+    timestamp: ISODate('2026-03-26T09:11:47.614Z'),
+    source_ip: '10.0.0.99',
+    event_type: 'test_insecure',
+    message: 'Ce document a été inséré sans authentification'
+  }
+]
+soc_lite> db.adminCommand({ listDatabases: 1 })
+{
+  databases: [
+    { name: 'admin', sizeOnDisk: Long('40960'), empty: false },
+    { name: 'config', sizeOnDisk: Long('12288'), empty: false },
+    { name: 'local', sizeOnDisk: Long('40960'), empty: false },
+    { name: 'soc_lite', sizeOnDisk: Long('8192'), empty: false }
+  ],
+  totalSize: Long('102400'),
+  totalSizeMb: Long('0'),
+  ok: 1
+}
+soc_lite> exit
+
+C:\Users\user>docker rm -f mongo_insecure
+mongo_insecure
+
+C:\Users\user>docker run -d --name mongo_secure \
+docker: invalid reference format
+
+Run 'docker run --help' for more information
+
+C:\Users\user>  -p 127.0.0.1:27017:27017 \
+'-p' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>  -e MONGO_INITDB_ROOT_USERNAME=adminSoc \
+'-e' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>  -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! \
+'-e' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+fefba69ac21c973282a533081b99298caa261796045a3e1272ea6754840d80ad
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_secure (6f3f2219ecec8d91b3440ffb6f99576ea91b08b1d645d840d5bb271db67d5fbd): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker stop mongo_insecure
+Error response from daemon: No such container: mongo_insecure
+
+C:\Users\user>docker rm mongo_insecure
+Error response from daemon: No such container: mongo_insecure
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_secure" is already in use by container "fefba69ac21c973282a533081b99298caa261796045a3e1272ea6754840d80ad". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker rm -f mongo_secure
+mongo_secure
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+1a3421aa82206bfce017ee861049876a2907c06b7c57a58063cf8c05fa358836
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_secure (3849c30ba7a0b749d8d085c47d7da84666b469d1a16f86efac359b032ae98b40): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>netstat -ano | findstr :27017
+  TCP    0.0.0.0:27017          0.0.0.0:0              LISTENING       3388
+  TCP    127.0.0.1:51904        127.0.0.1:27017        TIME_WAIT       0
+  TCP    127.0.0.1:51913        127.0.0.1:27017        TIME_WAIT       0
+  TCP    [::]:27017             [::]:0                 LISTENING       3388
+  TCP    [::1]:27017            [::]:0                 LISTENING       3848
+
+C:\Users\user>tasklist /FI "PID eq 3388"
+
+Image Name                     PID Session Name        Session#    Mem Usage
+========================= ======== ================ =========== ============
+com.docker.backend.exe        3388 Console                    1    128,272 K
+
+C:\Users\user>tasklist /FI "PID eq 3848"
+
+Image Name                     PID Session Name        Session#    Mem Usage
+========================= ======== ================ =========== ============
+wslrelay.exe                  3848 Console                    1      2,368 K
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_secure" is already in use by container "1a3421aa82206bfce017ee861049876a2907c06b7c57a58063cf8c05fa358836". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker rm -f mongo_secure
+mongo_secure
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+b27066408415a47f7b641629ace7e145a49932b81588e3a9fed0a1acfc1b11d0
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_secure (63cbf3b901398f1936ddbd20986c8e9b362eaa88ac9b78efd94cb22a5db0eca2): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27018:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_secure" is already in use by container "b27066408415a47f7b641629ace7e145a49932b81588e3a9fed0a1acfc1b11d0". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker run -d --name mongo_secure -p 127.0.0.1:27018:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_secure" is already in use by container "b27066408415a47f7b641629ace7e145a49932b81588e3a9fed0a1acfc1b11d0". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker run -d --name mongo_secure1 -p 127.0.0.1:27018:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+e12eb3d82e635ce09cab4921a4022e6d9dd26a2cd67f59c1140e34d7fce0d3e1
+
+C:\Users\user>docker exec -it mongo_secure mongo
+Error response from daemon: container b27066408415a47f7b641629ace7e145a49932b81588e3a9fed0a1acfc1b11d0 is not running
+
+C:\Users\user>docker exec -it mongo_secure1 mongo
+OCI runtime exec failed: exec failed: unable to start container process: exec: "mongo": executable file not found in $PATH
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh
+Current Mongosh Log ID: 69c4fa6e8f566c785fd805da
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.find()
+MongoServerError[Unauthorized]: Command find requires authentication
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin"
+Current Mongosh Log ID: 69c4fae548e97d25d6d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/admin?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:19:17.369+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+admin> db.adminCommand({ listDatabases: 1 })
+{
+  databases: [
+    { name: 'admin', sizeOnDisk: Long('102400'), empty: false },
+    { name: 'config', sizeOnDisk: Long('12288'), empty: false },
+    { name: 'local', sizeOnDisk: Long('73728'), empty: false }
+  ],
+  totalSize: Long('188416'),
+  totalSizeMb: Long('0'),
+  ok: 1
+}
+admin> exit
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27017:27017 mongo:7 \
+7d2130665d5a0fe2ea1a87931f3eccdf460946cf307967ac7e27ac8beec75d86
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_manual (c3dadaf12abb8047b1ec51251b65fcf48abe2bb53fff428ad462341ae1d97c8d): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>  mongod --auth --bind_ip_all
+'mongod' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27019:27017 mongo:7 \
+docker: Error response from daemon: Conflict. The container name "/mongo_manual" is already in use by container "7d2130665d5a0fe2ea1a87931f3eccdf460946cf307967ac7e27ac8beec75d86". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27019:27019 mongo:7 \
+docker: Error response from daemon: Conflict. The container name "/mongo_manual" is already in use by container "7d2130665d5a0fe2ea1a87931f3eccdf460946cf307967ac7e27ac8beec75d86". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker exec -it mongo_manual mongosh "mongodb://admin:Passw0rd@localhost:27017/admin"
+Error response from daemon: container 7d2130665d5a0fe2ea1a87931f3eccdf460946cf307967ac7e27ac8beec75d86 is not running
+
+C:\Users\user>docker rm -f mongo_manual
+mongo_manual
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7
+64b56996c5f7754ae844c3084a03ec0bf2c40e2c2daa6c665555fbb1451f0fdc
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_manual (3022cacdde29acd8f2684eb5f83e566ed4bf6e8250bca08b19a754645951b53d): Bind for 127.0.0.1:27018 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>  mongod --auth --bind_ip_all
+'mongod' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\user>docker rm -f mongo_manual
+mongo_manual
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27017:27017 mongo:7 mongod --auth --bind_ip_all
+1acfa3665f2e6b2f6494bd3a3e8f26faa0688273ba4f7c2897570f9a35d04920
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint mongo_manual (9b83b46f5e0611302a8d265136007a8d33cfb64c5ee2fb017c75122c55be2586): Bind for 0.0.0.0:27017 failed: port is already allocated
+
+Run 'docker run --help' for more information
+
+C:\Users\user>netstat -ano | findstr :27017
+  TCP    0.0.0.0:27017          0.0.0.0:0              LISTENING       3388
+  TCP    127.0.0.1:62398        127.0.0.1:27017        TIME_WAIT       0
+  TCP    [::]:27017             [::]:0                 LISTENING       3388
+  TCP    [::1]:27017            [::]:0                 LISTENING       3848
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7 mongod --auth --bind_ip_all
+docker: Error response from daemon: Conflict. The container name "/mongo_manual" is already in use by container "1acfa3665f2e6b2f6494bd3a3e8f26faa0688273ba4f7c2897570f9a35d04920". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>taskkill /PID 3388 /F
+SUCCESS: The process with PID 3388 has been terminated.
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7 mongod --auth --bind_ip_all
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+
+C:\Users\user>docker rm -f mongo_manual
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7 mongod --auth --bind_ip_all
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+
+C:\Users\user>docker info
+Client:
+ Version:    29.2.0
+ Context:    desktop-linux
+ Debug Mode: false
+ Plugins:
+  ai: Docker AI Agent - Ask Gordon (Docker Inc.)
+    Version:  v1.17.2
+    Path:     C:\Program Files\Docker\cli-plugins\docker-ai.exe
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.31.1-desktop.1
+    Path:     C:\Program Files\Docker\cli-plugins\docker-buildx.exe
+  compose: Docker Compose (Docker Inc.)
+    Version:  v5.0.2
+    Path:     C:\Program Files\Docker\cli-plugins\docker-compose.exe
+  debug: Get a shell into any image or container (Docker Inc.)
+    Version:  0.0.47
+    Path:     C:\Program Files\Docker\cli-plugins\docker-debug.exe
+  desktop: Docker Desktop commands (Docker Inc.)
+    Version:  v0.3.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-desktop.exe
+  extension: Manages Docker extensions (Docker Inc.)
+    Version:  v0.2.31
+    Path:     C:\Program Files\Docker\cli-plugins\docker-extension.exe
+  init: Creates Docker-related starter files for your project (Docker Inc.)
+    Version:  v1.4.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-init.exe
+  mcp: Docker MCP Plugin (Docker Inc.)
+    Version:  v0.38.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-mcp.exe
+  model: Docker Model Runner (Docker Inc.)
+    Version:  v1.0.8
+    Path:     C:\Program Files\Docker\cli-plugins\docker-model.exe
+  offload: Docker Offload (Docker Inc.)
+    Version:  v0.5.42
+    Path:     C:\Program Files\Docker\cli-plugins\docker-offload.exe
+  pass: Docker Pass Secrets Manager Plugin (beta) (Docker Inc.)
+    Version:  v0.0.24
+    Path:     C:\Program Files\Docker\cli-plugins\docker-pass.exe
+  sandbox: Docker Sandbox (Docker Inc.)
+    Version:  v0.11.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-sandbox.exe
+  sbom: View the packaged-based Software Bill Of Materials (SBOM) for an image (Anchore Inc.)
+    Version:  0.6.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-sbom.exe
+  scout: Docker Scout (Docker Inc.)
+    Version:  v1.19.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-scout.exe
+
+Server:
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+
+C:\Users\user>docker info
+Client:
+ Version:    29.2.0
+ Context:    desktop-linux
+ Debug Mode: false
+ Plugins:
+  ai: Docker AI Agent - Ask Gordon (Docker Inc.)
+    Version:  v1.17.2
+    Path:     C:\Program Files\Docker\cli-plugins\docker-ai.exe
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.31.1-desktop.1
+    Path:     C:\Program Files\Docker\cli-plugins\docker-buildx.exe
+  compose: Docker Compose (Docker Inc.)
+    Version:  v5.0.2
+    Path:     C:\Program Files\Docker\cli-plugins\docker-compose.exe
+  debug: Get a shell into any image or container (Docker Inc.)
+    Version:  0.0.47
+    Path:     C:\Program Files\Docker\cli-plugins\docker-debug.exe
+  desktop: Docker Desktop commands (Docker Inc.)
+    Version:  v0.3.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-desktop.exe
+  extension: Manages Docker extensions (Docker Inc.)
+    Version:  v0.2.31
+    Path:     C:\Program Files\Docker\cli-plugins\docker-extension.exe
+  init: Creates Docker-related starter files for your project (Docker Inc.)
+    Version:  v1.4.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-init.exe
+  mcp: Docker MCP Plugin (Docker Inc.)
+    Version:  v0.38.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-mcp.exe
+  model: Docker Model Runner (Docker Inc.)
+    Version:  v1.0.8
+    Path:     C:\Program Files\Docker\cli-plugins\docker-model.exe
+  offload: Docker Offload (Docker Inc.)
+    Version:  v0.5.42
+    Path:     C:\Program Files\Docker\cli-plugins\docker-offload.exe
+  pass: Docker Pass Secrets Manager Plugin (beta) (Docker Inc.)
+    Version:  v0.0.24
+    Path:     C:\Program Files\Docker\cli-plugins\docker-pass.exe
+  sandbox: Docker Sandbox (Docker Inc.)
+    Version:  v0.11.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-sandbox.exe
+  sbom: View the packaged-based Software Bill Of Materials (SBOM) for an image (Anchore Inc.)
+    Version:  0.6.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-sbom.exe
+  scout: Docker Scout (Docker Inc.)
+    Version:  v1.19.0
+    Path:     C:\Program Files\Docker\cli-plugins\docker-scout.exe
+
+Server:
+ Containers: 65
+  Running: 32
+  Paused: 0
+  Stopped: 33
+ Images: 25
+ Server Version: 29.2.0
+ Storage Driver: overlayfs
+  driver-type: io.containerd.snapshotter.v1
+ Logging Driver: json-file
+ Cgroup Driver: cgroupfs
+ Cgroup Version: 2
+ Plugins:
+  Volume: local
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+ CDI spec directories:
+  /etc/cdi
+  /var/run/cdi
+ Discovered Devices:
+  cdi: docker.com/gpu=webgpu
+ Swarm: inactive
+ Runtimes: runc io.containerd.runc.v2 nvidia
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: dea7da592f5d1d2b7755e3a161be07f43fad8f75
+ runc version: v1.3.4-0-gd6d73eb8
+ init version: de40ad0
+ Security Options:
+  seccomp
+   Profile: builtin
+  cgroupns
+ Kernel Version: 6.6.87.2-microsoft-standard-WSL2
+ Operating System: Docker Desktop
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 2
+ Total Memory: 3.826GiB
+ Name: docker-desktop
+ ID: d8a2984d-2e4a-4724-8ae7-97f992995810
+ Docker Root Dir: /var/lib/docker
+ Debug Mode: false
+ HTTP Proxy: http.docker.internal:3128
+ HTTPS Proxy: http.docker.internal:3128
+ No Proxy: hubproxy.docker.internal
+ Labels:
+  com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+ Experimental: false
+ Insecure Registries:
+  hubproxy.docker.internal:5555
+  ::1/128
+  127.0.0.0/8
+ Live Restore Enabled: false
+ Firewall Backend: iptables
+
+
+C:\Users\user>docker rm -f mongo_manual
+mongo_manual
+
+C:\Users\user>docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7 mongod --auth --bind_ip_all
+6ee96b7a14e74b391f9ed394095d82f2f2b4a70fc225db6211b4ade55e4cf18e
+
+C:\Users\user>docker exec -it mongo_manual mongo
+OCI runtime exec failed: exec failed: unable to start container process: exec: "mongo": executable file not found in $PATH
+
+C:\Users\user>docker exec -it mongo_manual mongosh
+Current Mongosh Log ID: 69c4fd4afabb8cf59fd805da
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+test> use admin
+switched to db admin
+admin> db.createUser({
+|   user: "adminSoc",
+|   pwd: "Passw0rd_S3cure!",
+|   roles: [{ role: "root", db: "admin" }]
+| })
+{ ok: 1 }
+admin> docker exec -it mongo_manual mongo -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+Uncaught:
+SyntaxError: Missing semicolon. (1:6)
+
+> 1 | docker exec -it mongo_manual mongo -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+    |       ^
+  2 |
+
+admin> exit
+
+C:\Users\user>docker exec -it mongo_manual mongo -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+OCI runtime exec failed: exec failed: unable to start container process: exec: "mongo": executable file not found in $PATH
+
+C:\Users\user>docker exec -it mongo_manual mongosh -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+Current Mongosh Log ID: 69c4fda36a8affadbbd805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:31:55.963+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+test> exit
+
+C:\Users\user>docker exec -it mongo_manual mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin
+Current Mongosh Log ID: 69c4fdd13506e44552d805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:31:55.963+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+test> exit
+
+C:\Users\user>docker exec -it mongo_manual mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin
+Current Mongosh Log ID: 69c4fe0785960414eed805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:31:55.963+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.createUser({
+|   user: "soc_app",
+|   pwd: "AppP@ss2024!",
+|   roles: [
+|     { role: "readWrite", db: "soc_lite" }
+|   ]
+| })
+{ ok: 1 }
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_manual mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/soc_lite"
+Current Mongosh Log ID: 69c4fe4474d38c47fdd805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_manual mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/admin"
+Current Mongosh Log ID: 69c4fe559a3d25709dd805da
+Connecting to:          mongodb://<credentials>@localhost:27017/admin?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker rm -f mongo_secure1
+mongo_secure1
+
+C:\Users\user>
+C:\Users\user>docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+d69ce7de180b04a4c44105f65ba927c997f98c0c1567d9248bd9dc1fdfd3cae8
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+Current Mongosh Log ID: 69c4feb5a69066e4eed805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:38:43.744+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+test> show dbs
+admin   100.00 KiB
+config   12.00 KiB
+local    40.00 KiB
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.find()
+
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh
+Current Mongosh Log ID: 69c4fefd6554f1d2f0d805da
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+test> show dbs
+MongoServerError[Unauthorized]: Command listDatabases requires authentication
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.find()
+MongoServerError[Unauthorized]: Command find requires authentication
+soc_lite>
+
+soc_lite> quit()
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin"
+Current Mongosh Log ID: 69c4ff41c579759a9ed805da
+Connecting to:          mongodb://<credentials>@localhost:27017/admin?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:38:43.744+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+admin> show dbs
+admin   100.00 KiB
+config   12.00 KiB
+local    72.00 KiB
+admin> use admin
+already on db admin
+admin> db.getUsers()
+{
+  users: [
+    {
+      _id: 'admin.adminSoc',
+      userId: UUID('adcb9b0b-d4c6-4a0a-a2e9-0edf3efdfbaa'),
+      user: 'adminSoc',
+      db: 'admin',
+      roles: [ { role: 'root', db: 'admin' } ],
+      mechanisms: [ 'SCRAM-SHA-1', 'SCRAM-SHA-256' ]
+    }
+  ],
+  ok: 1
+}
+admin> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.insertOne({
+|   timestamp: new Date(),
+|   source_ip: "192.168.1.50",
+|   event_type: "auth_success",
+|   message: "Connexion admin vérifiée",
+|   severity: "info"
+| })
+|
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c4ff5fc579759a9ed805db')
+}
+soc_lite> db.security_logs.find({ event_type: "auth_success" })
+[
+  {
+    _id: ObjectId('69c4ff5fc579759a9ed805db'),
+    timestamp: ISODate('2026-03-26T09:41:51.196Z'),
+    source_ip: '192.168.1.50',
+    event_type: 'auth_success',
+    message: 'Connexion admin vérifiée',
+    severity: 'info'
+  }
+]
+soc_lite>
+(To exit, press Ctrl+C again or Ctrl+D or type .exit)
+soc_lite> quit()
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin"
+Current Mongosh Log ID: 69c4ffbdceef6feb68d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/admin?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:38:43.744+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+admin> exit
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/soc_lite"
+Current Mongosh Log ID: 69c4ffcb1036e38759d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.createRole({role:'incidentManager', privileges:[{resource:{db:'soc_lite',collection:'incidents'}, actions:['find','insert','update','remove']}], roles:[]});"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.security_logs.insertMany([{timestamp:ISODate('2026-03-23T08:15:00Z'), source_ip:'10.0.1.45', event_type:'login_failed', severity:'warning', message:'Échec d\'authentification SSH - utilisateur root', hostname:'srv-web-01'}, {timestamp:ISODate('2026-03-23T08:15:03Z'), source_ip:'10.0.1.45', event_type:'login_failed', severity:'warning', message:'Échec d\'authentification SSH - utilisateur admin', hostname:'srv-web-01'}, {timestamp:ISODate('2026-03-23T08:16:30Z'), source_ip:'10.0.1.45', event_type:'login_success', severity:'critical', message:'Connexion SSH réussie après multiples échecs', hostname:'srv-web-01'}]); db.incidents.insertMany([{incident_id:'INC-2026-0042', title:'Brute-force SSH détecté sur srv-web-01', severity:'high', status:'open', created_at:ISODate('2026-03-23T08:20:00Z'), assigned_to:'analyst_dupont', description:'Multiples tentatives de connexion SSH suivies d\'un succès.'}, {incident_id:'INC-2026-0041', title:'Scan de ports depuis 192.168.5.200', severity:'medium', status:'investigating', created_at:ISODate('2026-03-22T14:05:00Z'), assigned_to:'analyst_martin', description:'Scan SYN détecté sur la plage 1-1024.'}]); db.users.insertMany([{username:'analyst_dupont', email:'dupont@entreprise.fr', department:'SOC', clearance_level:'confidential'}, {username:'analyst_martin', email:'martin@entreprise.fr', department:'SOC', clearance_level:'confidential'}]);"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval ^
+More? "use soc_lite; ^
+More? db.createRole({role:'incidentManager', privileges:[{resource:{db:'soc_lite', collection:'incidents'}, actions:['find','insert','update','remove']}], roles:[]}); ^
+More? db.createUser({user:'soc_app', pwd:'AppP@ss2026!', roles:[{role:'readWrite', db:'soc_lite'}]}); ^
+More? db.createUser({user:'soc_analyst_ro', pwd:'AnalystR0@2026!', roles:[{role:'read', db:'soc_lite'}]}); ^
+More? db.createUser({user:'soc_manager', pwd:'Mgr$ecure2026!', roles:[{role:'incidentManager', db:'soc_lite'}]}); ^
+More? db.getUsers();"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0@2026!@localhost:27017/soc_lite" --eval ^
+More? "db.security_logs.find().limit(2); ^
+More? db.incidents.find({severity:'high'}); ^
+More? db.security_logs.insertOne({event_type:'test_write', message:'tentative'}); ^
+More? db.incidents.deleteOne({incident_id:'INC-2026-0042'}); ^
+More? db.users.find();"
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite" --eval ^
+More? "db.security_logs.find().limit(2); ^
+More? db.incidents.find({severity:'high'}); ^
+More? db.security_logs.insertOne({event_type:'test_write', message:'tentative'}); ^
+More? db.incidents.deleteOne({incident_id:'INC-2026-0042'}); ^
+More? db.users.find();"
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite" --eval "db.security_logs.find().limit(2); db.incidents.find({severity:'high'});"
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite"
+Current Mongosh Log ID: 69c501249080e2ef34d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c501360d05e866b9d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.getUsers();"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0@2026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c50158176d8591e1d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c501694c28bf7f81d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.getUsers();"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.dropUser('soc_analyst_ro'); db.createUser({user:'soc_analyst_ro', pwd:'AnalystR02026!', roles:[{role:'read', db:'soc_lite'}]});"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR02026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c5017ee466354645d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u soc_analyst_ro -p "AnalystR02026!" --authenticationDatabase soc_lite
+Current Mongosh Log ID: 69c50191a66b4e7984d805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=soc_lite&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "use soc_lite; db.getUsers();"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval ^
+More? "use soc_lite; db.dropUser('soc_analyst_ro'); db.createUser({user:'soc_analyst_ro', pwd:'AnalystR02026', roles:[{role:'read', db:'soc_lite'}]});"
+switched to db soc_lite;
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u soc_analyst_ro -p "AnalystR02026" --authenticationDatabase soc_lite
+Current Mongosh Log ID: 69c501baff1fa40031d805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=soc_lite&appName=mongosh+2.8.1
+MongoServerError: Authentication failed.
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "use soc_lite; db.getUsers();"
+switched to db soc_lite;
+
+C:\Users\user>docker rm -f mongo_secure1
+mongo_secure1
+
+C:\Users\user>docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+51013c884f8277f8ccc28664c36c74d13ac7fb7c5b824ae5689f3ef48fa79fcd
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "
+Error response from daemon: container 51013c884f8277f8ccc28664c36c74d13ac7fb7c5b824ae5689f3ef48fa79fcd is not running
+
+C:\Users\user>docker ps -a
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS                        PORTS                        NAMES
+51013c884f82   mongo:7                      "docker-entrypoint.s…"   51 seconds ago   Exited (48) 43 seconds ago                                 mongo_secure1
+02fd14195513   c008d2fd497b                 "/usr/bin/dumb-init …"   20 minutes ago   Up 20 minutes                                              k8s_gitlab-runner_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+47f4366c1d51   e8c262566636                 "/coredns -conf /etc…"   20 minutes ago   Up 20 minutes                                              k8s_coredns_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+4ce3966ff5c0   e8c262566636                 "/coredns -conf /etc…"   20 minutes ago   Up 20 minutes                                              k8s_coredns_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+5fef3c28cea9   03cda579c8ca                 "docker-entrypoint.s…"   20 minutes ago   Up 20 minutes                                              k8s_mongo_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+bef8a6f883ba   03cda579c8ca                 "docker-entrypoint.s…"   20 minutes ago   Up 20 minutes                                              k8s_mongo_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+9eab5b3695c1   bdaff3408b1c                 "/kube-vpnkit-forwar…"   20 minutes ago   Up 20 minutes                                              k8s_vpnkit-controller_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+0f4fe348bc04   57d2b6ad1c6f                 "/storage-provisione…"   20 minutes ago   Up 20 minutes                                              k8s_storage-provisioner_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_8
+53c570e3b5e8   913cc83ca0b5                 "/usr/local/bin/kube…"   20 minutes ago   Up 20 minutes                                              k8s_kube-proxy_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+0a4007b15be5   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-694f58ddbf-g92wn_mongodb-app_1121be5b-f701-4e05-a0a3-c93c63800fd9_2
+c373bb3a59ab   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-694f58ddbf-nc674_mongodb-app_a4ee7d87-3dcf-4b5d-b92a-839b84b457b6_2
+9abe1a942430   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-5d586dc84d-b28rl_default_6ae5d582-f228-4146-8f3d-c10011b1b7a2_2
+f71d5463119f   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+1434e510a70b   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+9fb84c8f7086   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+5a70a804b30f   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+95bf056c7443   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_6
+6e1778a833a9   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+26f84eac23c8   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-694f58ddbf-jgbfq_mongodb-app_79788791-97d1-4bce-83e8-28080a43a1a3_2
+d6d6d3ed563a   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-5d586dc84d-66dxs_default_84a4f92b-59f1-4e07-b228-17af7f083a36_2
+afabe086a2e6   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-crud-app-5d586dc84d-76dln_default_3cf741b7-8146-405d-b820-5bb41f5c9d8b_2
+26af628bbaed   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+3a0f16aa7eca   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 20 minutes                                              k8s_POD_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+de0d067f471f   e36c08168342                 "etcd --advertise-cl…"   21 minutes ago   Up 21 minutes                                              k8s_etcd_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+43d9600eb26d   6e9fbc4e25a5                 "kube-scheduler --au…"   21 minutes ago   Up 21 minutes                                              k8s_kube-scheduler_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_8
+254f445989bb   2bf47c1b01f5                 "kube-controller-man…"   21 minutes ago   Up 21 minutes                                              k8s_kube-controller-manager_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+9de4917b48ec   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                              k8s_POD_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+548739eb12a4   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                              k8s_POD_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_6
+fad1a1fe5ee9   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                              k8s_POD_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+eb2ac0e4d22c   b9d7c117f8ac                 "kube-apiserver --ad…"   21 minutes ago   Up 21 minutes                                              k8s_kube-apiserver_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+1b8534ace6e3   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                              k8s_POD_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+6ee96b7a14e7   mongo:7                      "docker-entrypoint.s…"   21 minutes ago   Up 21 minutes                 127.0.0.1:27018->27017/tcp   mongo_manual
+b27066408415   mongo:7                      "docker-entrypoint.s…"   35 minutes ago   Created                                                    mongo_secure
+da55711decec   mongo:7                      "docker-entrypoint.s…"   58 minutes ago   Exited (255) 21 minutes ago   0.0.0.0:27017->27017/tcp     mongo-noseclab
+fa5a04e15479   mongo:6.0                    "docker-entrypoint.s…"   11 days ago      Exited (255) 10 days ago      0.0.0.0:27017->27017/tcp     mongo
+
+C:\Users\user>docker start mongo_secure1
+mongo_secure1
+
+C:\Users\user>docker ps
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS          PORTS                        NAMES
+51013c884f82   mongo:7                      "docker-entrypoint.s…"   54 seconds ago   Up 2 seconds    127.0.0.1:27017->27017/tcp   mongo_secure1
+02fd14195513   c008d2fd497b                 "/usr/bin/dumb-init …"   20 minutes ago   Up 20 minutes                                k8s_gitlab-runner_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+47f4366c1d51   e8c262566636                 "/coredns -conf /etc…"   20 minutes ago   Up 20 minutes                                k8s_coredns_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+4ce3966ff5c0   e8c262566636                 "/coredns -conf /etc…"   20 minutes ago   Up 20 minutes                                k8s_coredns_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+5fef3c28cea9   03cda579c8ca                 "docker-entrypoint.s…"   20 minutes ago   Up 20 minutes                                k8s_mongo_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+bef8a6f883ba   03cda579c8ca                 "docker-entrypoint.s…"   20 minutes ago   Up 20 minutes                                k8s_mongo_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+9eab5b3695c1   bdaff3408b1c                 "/kube-vpnkit-forwar…"   20 minutes ago   Up 20 minutes                                k8s_vpnkit-controller_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+0f4fe348bc04   57d2b6ad1c6f                 "/storage-provisione…"   20 minutes ago   Up 20 minutes                                k8s_storage-provisioner_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_8
+53c570e3b5e8   913cc83ca0b5                 "/usr/local/bin/kube…"   20 minutes ago   Up 20 minutes                                k8s_kube-proxy_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+0a4007b15be5   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-g92wn_mongodb-app_1121be5b-f701-4e05-a0a3-c93c63800fd9_2
+c373bb3a59ab   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-nc674_mongodb-app_a4ee7d87-3dcf-4b5d-b92a-839b84b457b6_2
+9abe1a942430   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-b28rl_default_6ae5d582-f228-4146-8f3d-c10011b1b7a2_2
+f71d5463119f   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+1434e510a70b   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+9fb84c8f7086   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+5a70a804b30f   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+95bf056c7443   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_6
+6e1778a833a9   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+26f84eac23c8   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-jgbfq_mongodb-app_79788791-97d1-4bce-83e8-28080a43a1a3_2
+d6d6d3ed563a   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-66dxs_default_84a4f92b-59f1-4e07-b228-17af7f083a36_2
+afabe086a2e6   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-76dln_default_3cf741b7-8146-405d-b820-5bb41f5c9d8b_2
+26af628bbaed   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+3a0f16aa7eca   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+de0d067f471f   e36c08168342                 "etcd --advertise-cl…"   21 minutes ago   Up 21 minutes                                k8s_etcd_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+43d9600eb26d   6e9fbc4e25a5                 "kube-scheduler --au…"   21 minutes ago   Up 21 minutes                                k8s_kube-scheduler_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_8
+254f445989bb   2bf47c1b01f5                 "kube-controller-man…"   21 minutes ago   Up 21 minutes                                k8s_kube-controller-manager_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+9de4917b48ec   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+548739eb12a4   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_6
+fad1a1fe5ee9   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+eb2ac0e4d22c   b9d7c117f8ac                 "kube-apiserver --ad…"   21 minutes ago   Up 21 minutes                                k8s_kube-apiserver_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+1b8534ace6e3   registry.k8s.io/pause:3.10   "/pause"                 21 minutes ago   Up 21 minutes                                k8s_POD_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+6ee96b7a14e7   mongo:7                      "docker-entrypoint.s…"   21 minutes ago   Up 21 minutes   127.0.0.1:27018->27017/tcp   mongo_manual
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "
+
+C:\Users\user>docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker: Error response from daemon: Conflict. The container name "/mongo_secure1" is already in use by container "51013c884f8277f8ccc28664c36c74d13ac7fb7c5b824ae5689f3ef48fa79fcd". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "
+
+C:\Users\user>docker rm -f mongo_secure1
+mongo_secure1
+
+C:\Users\user>docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+bd7ecdd74bdcaa16fc1dc4f7dd1af7c8fb511c7dbb596b6d0704ab24d159fa32
+
+C:\Users\user>docker ps
+CONTAINER ID   IMAGE                        COMMAND                  CREATED          STATUS          PORTS                        NAMES
+bd7ecdd74bdc   mongo:7                      "docker-entrypoint.s…"   13 seconds ago   Up 12 seconds   127.0.0.1:27017->27017/tcp   mongo_secure1
+02fd14195513   c008d2fd497b                 "/usr/bin/dumb-init …"   23 minutes ago   Up 23 minutes                                k8s_gitlab-runner_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+47f4366c1d51   e8c262566636                 "/coredns -conf /etc…"   23 minutes ago   Up 23 minutes                                k8s_coredns_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+4ce3966ff5c0   e8c262566636                 "/coredns -conf /etc…"   23 minutes ago   Up 23 minutes                                k8s_coredns_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+5fef3c28cea9   03cda579c8ca                 "docker-entrypoint.s…"   23 minutes ago   Up 23 minutes                                k8s_mongo_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+bef8a6f883ba   03cda579c8ca                 "docker-entrypoint.s…"   23 minutes ago   Up 23 minutes                                k8s_mongo_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+9eab5b3695c1   bdaff3408b1c                 "/kube-vpnkit-forwar…"   23 minutes ago   Up 23 minutes                                k8s_vpnkit-controller_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+0f4fe348bc04   57d2b6ad1c6f                 "/storage-provisione…"   23 minutes ago   Up 23 minutes                                k8s_storage-provisioner_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_8
+53c570e3b5e8   913cc83ca0b5                 "/usr/local/bin/kube…"   23 minutes ago   Up 23 minutes                                k8s_kube-proxy_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+0a4007b15be5   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-g92wn_mongodb-app_1121be5b-f701-4e05-a0a3-c93c63800fd9_2
+c373bb3a59ab   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-nc674_mongodb-app_a4ee7d87-3dcf-4b5d-b92a-839b84b457b6_2
+9abe1a942430   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-b28rl_default_6ae5d582-f228-4146-8f3d-c10011b1b7a2_2
+f71d5463119f   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_coredns-66bc5c9577-kgncn_kube-system_3f5ad353-adbe-43c3-9560-3c99721dacc8_6
+1434e510a70b   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_gitlab-runner-5c96d79cc-bd5bp_gitlab-runner_b755c4e5-f671-44e7-afc2-a1464aae8c97_6
+9fb84c8f7086   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_vpnkit-controller_kube-system_2225120d-5069-41e6-a45b-2d0f783c86c2_6
+5a70a804b30f   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-79c8f977bb-cpqz9_default_c9ae6291-b4c4-492a-89cf-94bad739d545_4
+95bf056c7443   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_storage-provisioner_kube-system_495f73a3-1e62-427e-ae72-5784261bab3d_6
+6e1778a833a9   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_coredns-66bc5c9577-btfgb_kube-system_0047e5d5-9e5f-4ac3-8aae-96523e60d02e_6
+26f84eac23c8   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-694f58ddbf-jgbfq_mongodb-app_79788791-97d1-4bce-83e8-28080a43a1a3_2
+d6d6d3ed563a   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-66dxs_default_84a4f92b-59f1-4e07-b228-17af7f083a36_2
+afabe086a2e6   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-crud-app-5d586dc84d-76dln_default_3cf741b7-8146-405d-b820-5bb41f5c9d8b_2
+26af628bbaed   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_mongo-79c8f977bb-2hxdx_mongodb-app_154d4e95-0520-4939-99b4-b47fab50414d_2
+3a0f16aa7eca   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_kube-proxy-n22jw_kube-system_0cb049f0-1469-41f3-aaed-eb7350c347eb_6
+de0d067f471f   e36c08168342                 "etcd --advertise-cl…"   23 minutes ago   Up 23 minutes                                k8s_etcd_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+43d9600eb26d   6e9fbc4e25a5                 "kube-scheduler --au…"   23 minutes ago   Up 23 minutes                                k8s_kube-scheduler_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_8
+254f445989bb   2bf47c1b01f5                 "kube-controller-man…"   23 minutes ago   Up 23 minutes                                k8s_kube-controller-manager_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+9de4917b48ec   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_etcd-docker-desktop_kube-system_0b753cb7812d40a401f3a8f63b18f779_6
+548739eb12a4   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_kube-scheduler-docker-desktop_kube-system_b44739859c757a4712b786569a89a1f3_6
+fad1a1fe5ee9   registry.k8s.io/pause:3.10   "/pause"                 23 minutes ago   Up 23 minutes                                k8s_POD_kube-controller-manager-docker-desktop_kube-system_10b0d524eef4b9a12d5827ba17a36f4f_6
+eb2ac0e4d22c   b9d7c117f8ac                 "kube-apiserver --ad…"   23 minutes ago   Up 23 minutes                                k8s_kube-apiserver_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+1b8534ace6e3   registry.k8s.io/pause:3.10   "/pause"                 24 minutes ago   Up 24 minutes                                k8s_POD_kube-apiserver-docker-desktop_kube-system_647244f1c75810d936baf4253b7903ef_6
+6ee96b7a14e7   mongo:7                      "docker-entrypoint.s…"   24 minutes ago   Up 24 minutes   127.0.0.1:27018->27017/tcp   mongo_manual
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin
+Current Mongosh Log ID: 69c502b26a724de0bdd805da
+Connecting to:          mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&authSource=admin&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+
+To help improve our products, anonymous usage data is collected and sent to MongoDB periodically (https://www.mongodb.com/legal/privacy-policy).
+You can opt-out by running the disableTelemetry() command.
+
+------
+   The server generated these startup warnings when booting
+   2026-03-26T09:55:54.397+00:00: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine. See http://dochub.mongodb.org/core/prodnotes-filesystem
+------
+
+test> use soc_lite
+switched to db soc_lite
+soc_lite> db.security_logs.insertMany([
+|        {
+|          timestamp: ISODate("2026-03-23T08:15:00Z"),
+|          source_ip: "10.0.1.45",
+|          event_type: "login_failed",
+|          severity: "warning",
+|          message: "Échec d'authentification SSH - utilisateur root",
+|          hostname: "srv-web-01"
+|        },
+|        {
+|          timestamp: ISODate("2026-03-23T08:15:03Z"),
+|          source_ip: "10.0.1.45",
+|          event_type: "login_failed",
+|          severity: "warning",
+|          message: "Échec d'authentification SSH - utilisateur admin",
+|          hostname: "srv-web-01"
+|        },
+|        {
+|          timestamp: ISODate("2026-03-23T08:16:30Z"),
+|          source_ip: "10.0.1.45",
+|          event_type: "login_success",
+|          severity: "critical",
+|          message: "Connexion SSH réussie après multiples échecs",
+|          hostname: "srv-web-01"
+|        }
+|      ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69c502fe6a724de0bdd805db'),
+    '1': ObjectId('69c502fe6a724de0bdd805dc'),
+    '2': ObjectId('69c502fe6a724de0bdd805dd')
+  }
+}
+soc_lite> db.incidents.insertMany([
+|        {
+|          incident_id: "INC-2026-0042",
+|          title: "Brute-force SSH détecté sur srv-web-01",
+|          severity: "high",
+|          status: "open",
+|          created_at: ISODate("2026-03-23T08:20:00Z"),
+|          assigned_to: "analyst_dupont",
+|          description: "Multiples tentatives de connexion SSH suivies d'un succès."
+|        },
+|        {
+|          incident_id: "INC-2026-0041",
+|          title: "Scan de ports depuis 192.168.5.200",
+|          severity: "medium",
+|          status: "investigating",
+|          created_at: ISODate("2026-03-22T14:05:00Z"),
+|          assigned_to: "analyst_martin",
+|          description: "Scan SYN détecté sur la plage 1-1024."
+|        }
+|      ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69c5035a6a724de0bdd805de'),
+    '1': ObjectId('69c5035a6a724de0bdd805df')
+  }
+}
+soc_lite> db.users.insertMany([
+|        {
+|          username: "analyst_dupont",
+|          email: "dupont@entreprise.fr",
+|          department: "SOC",
+|          clearance_level: "confidential"
+|        },
+|        {
+|          username: "analyst_martin",
+|          email: "martin@entreprise.fr",
+|          department: "SOC",
+|          clearance_level: "confidential"
+|        }
+|      ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69c503756a724de0bdd805e0'),
+    '1': ObjectId('69c503756a724de0bdd805e1')
+  }
+}
+soc_lite>
+(To exit, press Ctrl+C again or Ctrl+D or type .exit)
+soc_lite> db.createRole({
+|        role: "incidentManager",
+|        privileges: [
+|          {
+|            resource: { db: "soc_lite", collection: "incidents" },
+|            actions: ["find", "insert", "update", "remove"]
+|          }
+|        ],
+|        roles: []
+|      })
+{ ok: 1 }
+soc_lite> db.createUser({
+|        user: "soc_app",
+|        pwd: "AppP@ss2026!",
+|        roles: [
+|          { role: "readWrite", db: "soc_lite" }
+|        ]
+|      })
+{ ok: 1 }
+soc_lite> db.createUser({
+|        user: "soc_analyst_ro",
+|        pwd: "AnalystR0@2026!",
+|        roles: [
+|          { role: "read", db: "soc_lite" }
+|        ]
+|      })
+{ ok: 1 }
+soc_lite> db.createUser({
+|        user: "soc_manager",
+|        pwd: "Mgr$ecure2026!",
+|        roles: [
+|          { role: "incidentManager", db: "soc_lite" }
+|        ]
+|      })
+{ ok: 1 }
+soc_lite> db.getUsers()
+{
+  users: [
+    {
+      _id: 'soc_lite.soc_analyst_ro',
+      userId: UUID('68be0b0f-8ba2-4a3c-8afe-7118b48e3d5b'),
+      user: 'soc_analyst_ro',
+      db: 'soc_lite',
+      roles: [ { role: 'read', db: 'soc_lite' } ],
+      mechanisms: [ 'SCRAM-SHA-1', 'SCRAM-SHA-256' ]
+    },
+    {
+      _id: 'soc_lite.soc_app',
+      userId: UUID('91291d63-609b-4f56-8813-3330a7d561a1'),
+      user: 'soc_app',
+      db: 'soc_lite',
+      roles: [ { role: 'readWrite', db: 'soc_lite' } ],
+      mechanisms: [ 'SCRAM-SHA-1', 'SCRAM-SHA-256' ]
+    },
+    {
+      _id: 'soc_lite.soc_manager',
+      userId: UUID('0526eb00-8a00-407c-bdfc-48c11b3c59f4'),
+      user: 'soc_manager',
+      db: 'soc_lite',
+      roles: [ { role: 'incidentManager', db: 'soc_lite' } ],
+      mechanisms: [ 'SCRAM-SHA-1', 'SCRAM-SHA-256' ]
+    }
+  ],
+  ok: 1
+}
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite?authSource=soc_lite" --eval "db.security_logs.find().limit(2); db.incidents.find({severity:'high'}); db.security_logs.insertOne({event_type:'test_write', message:'tentative'}); db.incidents.deleteOne({incident_id:'INC-2026-0042'}); db.users.find();"
+MongoServerError: not authorized on soc_lite to execute command { insert: "security_logs", documents: [ { event_type: "test_write", message: "tentative", _id: ObjectId('69c50476f5d37d90f9d805db') } ], ordered: true, lsid: { id: UUID("4272c57d-420b-4cd6-8ff8-4a64e7e72ee4") }, $db: "soc_lite" }
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite?authSource=soc_lite" --eval "db.security_logs.find().limit(2); db.incidents.find({severity:'high'}); db.security_logs.insertOne({event_type:'test_write', message:'tentative'}); db.incidents.deleteOne({incident_id:'INC-2026-0042'}); db.users.find();"
+MongoServerError: not authorized on soc_lite to execute command { insert: "security_logs", documents: [ { event_type: "test_write", message: "tentative", _id: ObjectId('69c504b08eb118ed69d805db') } ], ordered: true, lsid: { id: UUID("e078610c-edbf-4cde-9d43-682f9e9ca8be") }, $db: "soc_lite" }
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_manager:Mgr$ecure2026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c5051574a0cb48ffd805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+soc_lite> db.incidents.find()
+[
+  {
+    _id: ObjectId('69c5035a6a724de0bdd805de'),
+    incident_id: 'INC-2026-0042',
+    title: 'Brute-force SSH détecté sur srv-web-01',
+    severity: 'high',
+    status: 'open',
+    created_at: ISODate('2026-03-23T08:20:00.000Z'),
+    assigned_to: 'analyst_dupont',
+    description: "Multiples tentatives de connexion SSH suivies d'un succès."
+  },
+  {
+    _id: ObjectId('69c5035a6a724de0bdd805df'),
+    incident_id: 'INC-2026-0041',
+    title: 'Scan de ports depuis 192.168.5.200',
+    severity: 'medium',
+    status: 'investigating',
+    created_at: ISODate('2026-03-22T14:05:00.000Z'),
+    assigned_to: 'analyst_martin',
+    description: 'Scan SYN détecté sur la plage 1-1024.'
+  }
+]
+soc_lite>  db.incidents.updateOne(
+|        { incident_id: "INC-2026-0042" },
+|        { $set: { status: "investigating", assigned_to: "manager_leroy" } }
+|      )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+soc_lite> db.security_logs.find().limit(1)
+MongoServerError[Unauthorized]: not authorized on soc_lite to execute command { find: "security_logs", filter: {}, limit: 1, lsid: { id: UUID("4f476133-5f61-468e-901b-5b1f94d02378") }, $db: "soc_lite" }
+soc_lite> db.users.find()
+MongoServerError[Unauthorized]: not authorized on soc_lite to execute command { find: "users", filter: {}, lsid: { id: UUID("4f476133-5f61-468e-901b-5b1f94d02378") }, $db: "soc_lite" }
+soc_lite> db.adminCommand({ listDatabases: 1 })
+{
+  databases: [ { name: 'soc_lite', sizeOnDisk: Long('139264'), empty: false } ],
+  totalSize: Long('139264'),
+  totalSizeMb: Long('0'),
+  ok: 1
+}
+soc_lite> eixt
+ReferenceError: eixt is not defined
+soc_lite> exot
+ReferenceError: exot is not defined
+soc_lite> exit
+
+C:\Users\user>docker exec -it mongo_secure1 mongosh "mongodb://soc_app:AppP@ss2026!@localhost:27017/soc_lite?authSource=soc_lite"
+Current Mongosh Log ID: 69c505990b816ecfd8d805da
+Connecting to:          mongodb://<credentials>@localhost:27017/soc_lite?authSource=soc_lite&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.8.1
+Using MongoDB:          7.0.31
+Using Mongosh:          2.8.1
+
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
+
+soc_lite> db.security_logs.insertOne({
+|   timestamp: new Date(),
+|   source_ip: "10.0.2.100",
+|   event_type: "firewall_drop",
+|   severity: "info",
+|   message: "Paquet TCP bloqué par règle DROP"
+| })
+{
+  acknowledged: true,
+  insertedId: ObjectId('69c505a10b816ecfd8d805db')
+}
+soc_lite> db.incidents.find({ status: "open" })
+
+soc_lite> db.users.find()
+[
+  {
+    _id: ObjectId('69c503756a724de0bdd805e0'),
+    username: 'analyst_dupont',
+    email: 'dupont@entreprise.fr',
+    department: 'SOC',
+    clearance_level: 'confidential'
+  },
+  {
+    _id: ObjectId('69c503756a724de0bdd805e1'),
+    username: 'analyst_martin',
+    email: 'martin@entreprise.fr',
+    department: 'SOC',
+    clearance_level: 'confidential'
+  }
+]
+soc_lite> db.users.find()
+[
+  {
+    _id: ObjectId('69c503756a724de0bdd805e0'),
+    username: 'analyst_dupont',
+    email: 'dupont@entreprise.fr',
+    department: 'SOC',
+    clearance_level: 'confidential'
+  },
+  {
+    _id: ObjectId('69c503756a724de0bdd805e1'),
+    username: 'analyst_martin',
+    email: 'martin@entreprise.fr',
+    department: 'SOC',
+    clearance_level: 'confidential'
+  }
+]
+soc_lite> db.adminCommand({ listDatabases: 1 })
+{
+  databases: [ { name: 'soc_lite', sizeOnDisk: Long('172032'), empty: false } ],
+  totalSize: Long('172032'),
+  totalSizeMb: Long('0'),
+  ok: 1
+}
+soc_lite>
