@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Séance 1 — SIEM SOC | SecureBank SA | Cybersécurité Ingénierie</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+:root{
+  --bg:#06080f;--bg2:#0a0e1c;--bg3:#0e1428;--bg4:#141d36;
+  --bd:rgba(100,180,255,0.1);--bd2:rgba(100,180,255,0.25);
+  --acc:#4da6ff;--acc2:#80c0ff;--acc3:#b388ff;
+  --grn:#00e676;--orn:#ff9100;--red:#ff5252;--ylw:#ffd740;--cyn:#18ffff;
+  --txt:#dde6f0;--tx2:#8099b8;--tx3:#3d5070;
+  --mono:'JetBrains Mono',monospace;--serif:'Source Serif 4',serif;--disp:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--serif);font-size:15.5px;line-height:1.85;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:200;background:rgba(6,8,15,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);height:46px;display:flex;align-items:center;padding:0 40px;overflow-x:auto;gap:0}
+.nav a{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);text-decoration:none;padding:0 14px;height:100%;display:flex;align-items:center;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.nav a:hover,.nav a.on{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* ── HEADER ── */
+.hdr{padding:60px 64px 52px;border-bottom:1px solid var(--bd2);position:relative;overflow:hidden;background:radial-gradient(ellipse 80% 60% at 70% 40%,rgba(77,166,255,.06) 0%,transparent 70%)}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent)}
+.hdr-eyebrow{font-family:var(--mono);font-size:10px;color:var(--acc);letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px}
+.hdr-title{font-family:var(--disp);font-size:44px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:14px}
+.hdr-title b{color:var(--acc)}
+.hdr-sub{font-family:var(--serif);font-size:17px;color:var(--tx2);font-weight:300;max-width:680px;margin-bottom:34px;line-height:1.6}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:3px;border:1px solid}
+.bb{color:var(--acc);border-color:rgba(77,166,255,.35);background:rgba(77,166,255,.07)}
+.bg{color:var(--grn);border-color:rgba(0,230,118,.3);background:rgba(0,230,118,.06)}
+.bo{color:var(--orn);border-color:rgba(255,145,0,.35);background:rgba(255,145,0,.07)}
+.bp{color:var(--acc3);border-color:rgba(179,136,255,.35);background:rgba(179,136,255,.07)}
+.br{color:var(--red);border-color:rgba(255,82,82,.35);background:rgba(255,82,82,.07)}
+.metas{display:flex;gap:16px;flex-wrap:wrap}
+.meta{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:7px;padding:10px 16px}
+.meta .l{font-family:var(--mono);font-size:8.5px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.meta .v{font-family:var(--mono);font-size:12px;color:var(--txt);font-weight:600}
+
+/* ── WRAP ── */
+.wrap{max-width:1080px;margin:0 auto;padding:52px 64px}
+@media(max-width:768px){.wrap{padding:28px 20px}.hdr{padding:36px 20px}}
+
+/* ── SECTION ── */
+.sec{margin-bottom:68px;scroll-margin-top:56px}
+.sec-hd{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
+.sec-n{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--acc);background:rgba(77,166,255,.1);border:1px solid rgba(77,166,255,.25);padding:3px 10px;border-radius:3px;letter-spacing:.08em}
+.sec-t{font-family:var(--disp);font-size:24px;font-weight:700;color:#fff}
+
+/* ── PROSE ── */
+.prose{font-family:var(--serif);font-size:15px;color:var(--tx2);line-height:1.9;max-width:840px}
+.prose p{margin-bottom:14px}
+.prose strong{color:var(--txt);font-weight:600}
+.prose em{color:var(--acc2);font-style:italic}
+h3.sub{font-family:var(--disp);font-size:20px;font-weight:700;color:#fff;margin:34px 0 14px}
+h4.ss{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--acc2);margin:22px 0 10px}
+
+/* ── SCENARIO BANNER ── */
+.scenario{border-radius:12px;padding:28px 32px;margin:20px 0;position:relative;overflow:hidden}
+.scenario::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,82,82,.07),rgba(255,145,0,.05));pointer-events:none}
+.scenario{border:1px solid rgba(255,82,82,.3)}
+.sc-lbl{font-family:var(--mono);font-size:9px;color:var(--red);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px}
+.sc-title{font-family:var(--disp);font-size:21px;font-weight:800;color:#fff;margin-bottom:10px}
+.sc-body{font-family:var(--serif);font-size:14.5px;color:var(--tx2);line-height:1.75}
+.sc-body strong{color:var(--txt)}
+.incident-ticker{font-family:var(--mono);font-size:11px;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.2);border-radius:6px;padding:10px 14px;margin-top:14px;color:var(--red);display:flex;gap:10px;align-items:center}
+
+/* ── CALLOUT ── */
+.callout{border-radius:8px;padding:16px 20px;margin:18px 0;display:flex;gap:14px;align-items:flex-start}
+.ci{font-size:18px;flex-shrink:0;margin-top:2px}
+.callout h4{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:5px}
+.callout p,.callout ul{font-family:var(--serif);font-size:13.5px;line-height:1.65}
+.callout ul{padding-left:18px;margin-top:5px}
+.callout ul li{margin-bottom:4px}
+.ci-info{background:rgba(77,166,255,.07);border:1px solid rgba(77,166,255,.2)}.ci-info h4,.ci-info .ci{color:var(--acc)}.ci-info p,.ci-info ul{color:#7ab0d8}
+.ci-warn{background:rgba(255,145,0,.07);border:1px solid rgba(255,145,0,.2)}.ci-warn h4,.ci-warn .ci{color:var(--orn)}.ci-warn p,.ci-warn ul{color:#d8983a}
+.ci-danger{background:rgba(255,82,82,.07);border:1px solid rgba(255,82,82,.2)}.ci-danger h4,.ci-danger .ci{color:var(--red)}.ci-danger p,.ci-danger ul{color:#d87878}
+.ci-ok{background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2)}.ci-ok h4,.ci-ok .ci{color:var(--grn)}.ci-ok p,.ci-ok ul{color:#60c890}
+.ci-sec{background:rgba(179,136,255,.07);border:1px solid rgba(179,136,255,.2)}.ci-sec h4,.ci-sec .ci{color:var(--acc3)}.ci-sec p,.ci-sec ul{color:#b090e0}
+
+/* ── ANALOGY ── */
+.analogy{background:linear-gradient(135deg,rgba(77,166,255,.05),rgba(179,136,255,.05));border:1px solid rgba(77,166,255,.18);border-left:3px solid var(--acc);border-radius:10px;padding:18px 22px;margin:18px 0}
+.an-lbl{font-family:var(--mono);font-size:9px;color:var(--acc);text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}
+.an-txt{font-family:var(--serif);font-size:14px;color:#90aac8;line-height:1.7}
+.an-txt strong{color:var(--acc2)}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--bd);margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:rgba(77,166,255,.07)}
+th{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);padding:11px 14px;text-align:left;border-bottom:1px solid var(--bd2)}
+td{padding:10px 14px;border-bottom:1px solid var(--bd);color:var(--tx2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.018)}
+.tc{font-family:var(--mono);font-size:11px;color:var(--acc)}
+.tg{color:var(--grn);font-weight:600}.tr{color:var(--red);font-weight:600}.to{color:var(--orn);font-weight:600}.ty{color:var(--ylw);font-weight:600}
+
+/* ── CODE ── */
+.cb{background:#030508;border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin:14px 0}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--bd)}
+.cl{font-family:var(--mono);font-size:9px;color:var(--acc);text-transform:uppercase;letter-spacing:.1em}
+.cf{font-family:var(--mono);font-size:9px;color:var(--tx3)}
+pre{padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;line-height:1.72;color:var(--txt);margin:0;tab-size:2}
+.kw{color:#c792ea}.st{color:#c3e88d}.cm{color:#3d5468;font-style:italic}.nu{color:#f78c6c}.fn{color:var(--acc)}.va{color:#ffcb6b}.op{color:#89ddff}
+
+/* ── SVG BOX ── */
+.svgbox{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:22px;margin:18px 0;overflow:hidden}
+.svgbox svg{width:100%;height:auto;display:block}
+.svgtitle{font-family:var(--mono);font-size:9.5px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+
+/* ── STEPPER ── */
+.stp{border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin:20px 0}
+.stp-nav{display:flex;background:var(--bg3);border-bottom:1px solid var(--bd);overflow-x:auto}
+.stp-btn{font-family:var(--mono);font-size:9.5px;padding:11px 16px;cursor:pointer;color:var(--tx3);background:none;border:none;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;letter-spacing:.06em;text-transform:uppercase}
+.stp-btn:hover{color:var(--txt)}.stp-btn.on{color:var(--acc);border-bottom-color:var(--acc)}
+.stp-body{padding:28px}
+.stp-panel{display:none}.stp-panel.on{display:block}
+.stp-panel h4{font-family:var(--disp);font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}
+.stp-panel p,.stp-panel ul{font-family:var(--serif);font-size:14px;color:var(--tx2);line-height:1.75;margin-bottom:10px}
+.stp-panel ul{padding-left:20px}.stp-panel ul li{margin-bottom:5px}
+.stp-foot{display:flex;justify-content:space-between;align-items:center;padding:13px 28px;border-top:1px solid var(--bd);background:var(--bg3)}
+.dots{display:flex;gap:6px}.dot{width:6px;height:6px;border-radius:50%;background:var(--bg4);transition:background .2s}.dot.on{background:var(--acc)}
+.scnt{font-family:var(--mono);font-size:9px;color:var(--tx3);text-align:center;margin-top:4px}
+.btn{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:all .2s}
+.btn-p{background:rgba(77,166,255,.15);color:var(--acc);border:1px solid rgba(77,166,255,.3)}.btn-p:hover{background:rgba(77,166,255,.25)}
+.btn-g{background:none;color:var(--tx3);border:1px solid var(--bd)}.btn-g:hover{color:var(--txt)}
+
+/* ── TABS ── */
+.tab-bar{display:flex;border-bottom:1px solid var(--bd)}
+.tab-btn{font-family:var(--mono);font-size:9.5px;padding:9px 16px;cursor:pointer;color:var(--tx3);background:none;border:none;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;letter-spacing:.07em}
+.tab-btn:hover{color:var(--txt)}.tab-btn.on{color:var(--acc);border-bottom-color:var(--acc)}
+.tab-panel{display:none;padding-top:18px}.tab-panel.on{display:block}
+
+/* ── CARDS GRID ── */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px;margin:16px 0}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:20px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.cb2::before{background:var(--acc)}.cg2::before{background:var(--grn)}.co2::before{background:var(--orn)}.cp2::before{background:var(--acc3)}.cr2::before{background:var(--red)}.cc2::before{background:var(--cyn)}
+.card-icon{font-size:22px;margin-bottom:9px}
+.card-title{font-family:var(--disp);font-size:14.5px;font-weight:700;color:#fff;margin-bottom:6px}
+.card-body{font-family:var(--serif);font-size:12.5px;color:var(--tx2);line-height:1.6}
+.card-tag{font-family:var(--mono);font-size:8.5px;color:var(--tx3);margin-top:9px;text-transform:uppercase;letter-spacing:.1em}
+
+/* ── VM TOPO ── */
+.topo{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:22px;margin:16px 0}
+.vm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px}
+.vmc{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center}
+.vmi{font-size:26px;margin-bottom:6px}
+.vmn{font-family:var(--mono);font-size:10px;color:var(--acc);font-weight:700;margin-bottom:4px}
+.vmr{font-family:var(--serif);font-size:11.5px;color:var(--tx2);margin-bottom:7px;line-height:1.4}
+.vms{font-family:var(--mono);font-size:9px;color:var(--tx3)}
+
+/* ── QUIZ ── */
+.quiz{border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin:20px 0}
+.qhdr{background:linear-gradient(135deg,rgba(77,166,255,.09),rgba(179,136,255,.07));border-bottom:1px solid var(--bd);padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.qhdr h3{font-family:var(--disp);font-size:17px;font-weight:700;color:#fff}
+.qscore{font-family:var(--mono);font-size:11px;color:var(--acc)}
+.qprogwrap{height:3px;background:var(--bg3)}
+.qprog{height:3px;background:var(--acc);transition:width .4s ease;width:10%}
+.qbody{padding:28px}
+.qpanel{display:none}.qpanel.on{display:block}
+.qnum{font-family:var(--mono);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.qtxt{font-family:var(--disp);font-size:16px;font-weight:600;color:#fff;margin-bottom:18px;line-height:1.5}
+.qopts{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.qopt{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1px solid var(--bd);border-radius:8px;cursor:pointer;transition:all .22s;background:var(--bg3);font-family:var(--serif);font-size:13.5px;color:var(--tx2);line-height:1.5;text-align:left;width:100%}
+.qopt:hover:not([disabled]){border-color:rgba(77,166,255,.4);background:rgba(77,166,255,.05);color:var(--txt)}
+.ql{font-family:var(--mono);font-size:10px;font-weight:700;min-width:22px;height:22px;border-radius:4px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.qopt.ok{border-color:rgba(0,230,118,.5);background:rgba(0,230,118,.07);color:var(--grn)}.qopt.ok .ql{background:rgba(0,230,118,.18);color:var(--grn)}
+.qopt.ko{border-color:rgba(255,82,82,.4);background:rgba(255,82,82,.06);color:var(--red)}.qopt.ko .ql{background:rgba(255,82,82,.18);color:var(--red)}
+.qopt.miss{border-color:rgba(0,230,118,.25);background:rgba(0,230,118,.03)}
+.qfb{display:none;border-radius:8px;padding:13px 16px;margin-top:4px;font-family:var(--serif);font-size:13px;line-height:1.6}
+.qfb.show{display:block}
+.qfb.ok{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.18);color:#60c890}
+.qfb.ko{background:rgba(255,82,82,.06);border:1px solid rgba(255,82,82,.18);color:#d87878}
+.qnav{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;border-top:1px solid var(--bd);background:var(--bg3)}
+.qres{display:none;text-align:center;padding:52px 28px}.qres.show{display:block}
+.qres-n{font-family:var(--disp);font-size:68px;font-weight:800;line-height:1;margin-bottom:6px}
+.qres-l{font-family:var(--mono);font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px}
+.qres-m{font-family:var(--serif);font-size:15px;color:var(--tx2);max-width:420px;margin:0 auto 24px}
+
+/* ── EVAL ── */
+.egrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ecard{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:20px;text-align:center}
+.epts{font-family:var(--disp);font-size:38px;font-weight:800;color:var(--acc);margin-bottom:4px}
+.elbl{font-family:var(--serif);font-size:12px;color:var(--tx2);margin-bottom:6px}
+.edesc{font-family:var(--serif);font-size:11px;color:var(--tx3);line-height:1.4}
+
+/* ── MISC ── */
+hr.d{border:none;border-top:1px solid var(--bd);margin:30px 0}
+code{font-family:var(--mono);font-size:11.5px;background:rgba(77,166,255,.1);border:1px solid rgba(77,166,255,.18);padding:1px 6px;border-radius:3px;color:var(--acc)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.foot{border-top:1px solid var(--bd);padding:20px 64px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9.5px;color:var(--tx3)}
+.foot-logo{color:var(--acc);font-weight:700;letter-spacing:.1em}
+@media(max-width:700px){.two{grid-template-columns:1fr}.egrid{grid-template-columns:1fr}}
+
+/* ── ATTACK TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:18px}
+.tl-left{display:flex;flex-direction:column;align-items:center;width:52px;flex-shrink:0}
+.tl-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:18px;border:2px solid}
+.tl-line{width:1px;flex:1;background:var(--bd);margin-top:4px;min-height:16px}
+.tl-last .tl-line{display:none}
+.tl-time{font-family:var(--mono);font-size:9px;color:var(--tx3);margin-top:20px;text-align:center}
+.tl-body{flex:1;padding:12px 0 26px}
+.tl-phase{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}
+.tl-body h4{font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;margin-bottom:6px}
+.tl-body p{font-family:var(--serif);font-size:13px;color:var(--tx2);line-height:1.6}
+.tl-mitre{font-family:var(--mono);font-size:9px;margin-top:6px;padding:3px 8px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#scenario">Scénario</a>
+  <a href="#theorie">Théorie SOC/SIEM</a>
+  <a href="#outils">Outils</a>
+  <a href="#ids-ips">IDS vs IPS</a>
+  <a href="#pipeline">Pipeline</a>
+  <a href="#tp">TP Lab</a>
+  <a href="#quiz">Quiz</a>
+  <a href="#eval">Évaluation</a>
+</nav>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-eyebrow">Cybersécurité · Ingénierie · EUROMED</div>
+  <h1 class="hdr-title">SOC &amp; SIEM —<br>Périmètre <b>Réseau</b></h1>
+  <p class="hdr-sub">Construire, opérer et analyser le premier niveau défensif d'un Security Operations Center à travers un scénario bancaire réaliste.</p>
+  <div class="badges">
+    <span class="badge bb">4 heures</span>
+    <span class="badge bg">Lab VM</span>
+    <span class="badge bo">Ingénierie Cybersécurité</span>
+    <span class="badge bp">SOC Tier 1</span>
+    <span class="badge br">SecureBank SA</span>
+  </div>
+  <div class="metas">
+    <div class="meta"><div class="l">Outils</div><div class="v">pfSense · Suricata · Wazuh · Elastic · Kibana</div></div>
+    <div class="meta"><div class="l">Prérequis</div><div class="v">TCP/IP · Linux · Réseaux L3</div></div>
+    <div class="meta"><div class="l">Livrables</div><div class="v">Dashboard SOC + Rapport IR</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════ SCÉNARIO ═══ -->
+<div class="sec" id="scenario">
+  <div class="sec-hd"><span class="sec-n">00</span><h2 class="sec-t">Scénario — SecureBank SA sous attaque</h2></div>
+
+  <div class="scenario">
+    <div class="sc-lbl">🏦 Scénario fil rouge — Incident en cours</div>
+    <div class="sc-title">SecureBank SA — Banque en ligne : intrusion détectée</div>
+    <div class="sc-body">
+      <strong>SecureBank SA</strong> est une banque en ligne marocaine qui gère 300 000 comptes clients. Son infrastructure héberge un <strong>portail web bancaire</strong> (Apache + PHP), une <strong>API de paiement</strong> (REST JSON), un <strong>back-office interne</strong> (accès SSH réservé aux sysadmins), et une <strong>base de données Oracle</strong> contenant les données financières.<br><br>
+      Ce matin à <strong>06h47</strong>, le système de monitoring détecte des anomalies réseau sur le DMZ. Plusieurs tentatives d'accès non autorisées sont enregistrées sur le portail d'administration. La DSI active le <strong>SOC d'urgence</strong>. Vous êtes les analystes Tier 1 en charge de l'investigation.
+    </div>
+    <div class="incident-ticker">
+      <span>🔴 INCIDENT ACTIF</span>
+      <span>|</span>
+      <span>06h47 — Scan réseau détecté sur DMZ</span>
+      <span>|</span>
+      <span>07h03 — 247 tentatives SSH sur 192.168.50.10</span>
+      <span>|</span>
+      <span>07h15 — Injection SQL suspectée sur /api/login</span>
+    </div>
+  </div>
+
+  <h3 class="sub">Infrastructure SecureBank SA — cartographie</h3>
+  <div class="svgbox">
+    <div class="svgtitle">Architecture réseau SecureBank SA — 3 zones de sécurité</div>
+    <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#00e676" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+
+      <!-- Zone WAN -->
+      <text x="60" y="20" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" letter-spacing="2">ZONE WAN</text>
+      <rect x="10" y="28" width="100" height="120" rx="8" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.25)" stroke-width="1"/>
+      <text x="60" y="60" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="11" font-weight="700">Internet</text>
+      <text x="60" y="80" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">Clients légitimes</text>
+      <rect x="22" y="92" width="76" height="28" rx="5" fill="rgba(255,82,82,.12)" stroke="rgba(255,82,82,.3)" stroke-width="1"/>
+      <text x="60" y="106" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">⚔️ Attaquant</text>
+      <text x="60" y="118" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="8">185.220.x.x</text>
+      <text x="60" y="136" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Tor Exit Node</text>
+
+      <!-- pfSense FW1 -->
+      <line x1="110" y1="90" x2="158" y2="90" stroke="#ff5252" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#a2)"/>
+      <rect x="160" y="55" width="110" height="80" rx="9" fill="rgba(77,166,255,.09)" stroke="rgba(77,166,255,.5)" stroke-width="2"/>
+      <text x="215" y="80" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="13" font-weight="800">FW-DMZ</text>
+      <text x="215" y="96" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">pfSense #1</text>
+      <rect x="172" y="104" width="86" height="20" rx="4" fill="rgba(0,230,118,.1)" stroke="rgba(0,230,118,.3)" stroke-width="1"/>
+      <text x="215" y="118" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600">Suricata IDS</text>
+
+      <!-- Zone DMZ -->
+      <text x="390" y="20" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" letter-spacing="2">ZONE DMZ (192.168.50.0/24)</text>
+      <rect x="282" y="28" width="310" height="280" rx="10" fill="rgba(255,145,0,.03)" stroke="rgba(255,145,0,.2)" stroke-width="1" stroke-dasharray="6 3"/>
+
+      <!-- Arrow FW1 → DMZ -->
+      <line x1="270" y1="90" x2="298" y2="90" stroke="#4da6ff" stroke-width="2" marker-end="url(#a1)"/>
+      <text x="284" y="82" text-anchor="middle" fill="#4da6ff" font-family="JetBrains Mono,monospace" font-size="8">DMZ</text>
+
+      <!-- Portail Web -->
+      <rect x="300" y="44" width="130" height="64" rx="7" fill="rgba(255,145,0,.08)" stroke="rgba(255,145,0,.3)" stroke-width="1.5"/>
+      <text x="365" y="66" text-anchor="middle" fill="#ff9100" font-family="Syne,sans-serif" font-size="12" font-weight="700">Portail Web</text>
+      <text x="365" y="82" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">192.168.50.10</text>
+      <text x="365" y="96" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Apache · PHP · HTTPS:443</text>
+
+      <!-- API Paiement -->
+      <rect x="300" y="126" width="130" height="60" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.25)" stroke-width="1"/>
+      <text x="365" y="148" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="12" font-weight="700">API Paiement</text>
+      <text x="365" y="164" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">192.168.50.20</text>
+      <text x="365" y="178" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Node.js · REST · :3000</text>
+
+      <!-- Reverse Proxy / WAF -->
+      <rect x="450" y="80" width="130" height="60" rx="7" fill="rgba(77,166,255,.07)" stroke="rgba(77,166,255,.25)" stroke-width="1"/>
+      <text x="515" y="102" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="12" font-weight="700">F5 / Nginx RP</text>
+      <text x="515" y="118" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">192.168.50.5</text>
+      <text x="515" y="132" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">WAF · Load Balancer</text>
+
+      <!-- Wazuh agents in DMZ -->
+      <rect x="300" y="210" width="275" height="26" rx="5" fill="rgba(179,136,255,.07)" stroke="rgba(179,136,255,.2)" stroke-width="1"/>
+      <text x="437" y="227" text-anchor="middle" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600">Wazuh Agents sur chaque serveur DMZ</text>
+
+      <!-- FW2 LAN -->
+      <line x1="592" y1="140" x2="638" y2="140" stroke="#4da6ff" stroke-width="1.5" marker-end="url(#a1)"/>
+      <rect x="640" y="110" width="110" height="72" rx="9" fill="rgba(77,166,255,.08)" stroke="rgba(77,166,255,.4)" stroke-width="1.5"/>
+      <text x="695" y="132" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="12" font-weight="700">FW-LAN</text>
+      <text x="695" y="148" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">pfSense #2</text>
+      <text x="695" y="164" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Filtre DMZ → LAN</text>
+      <text x="695" y="178" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="7">Suricata IDS</text>
+
+      <!-- Zone LAN -->
+      <text x="790" y="20" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" letter-spacing="2">ZONE LAN</text>
+      <line x1="750" y1="140" x2="768" y2="140" stroke="#4da6ff" stroke-width="1.5" marker-end="url(#a1)"/>
+      <rect x="770" y="60" width="80" height="48" rx="7" fill="rgba(0,230,118,.07)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
+      <text x="810" y="82" text-anchor="middle" fill="#00e676" font-family="Syne,sans-serif" font-size="11" font-weight="700">Oracle DB</text>
+      <text x="810" y="96" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">10.0.10.5</text>
+
+      <rect x="770" y="120" width="80" height="48" rx="7" fill="rgba(179,136,255,.07)" stroke="rgba(179,136,255,.2)" stroke-width="1"/>
+      <text x="810" y="140" text-anchor="middle" fill="#b388ff" font-family="Syne,sans-serif" font-size="11" font-weight="700">SOC SIEM</text>
+      <text x="810" y="156" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Elastic+Kibana</text>
+
+      <rect x="770" y="180" width="80" height="48" rx="7" fill="rgba(77,166,255,.07)" stroke="rgba(77,166,255,.2)" stroke-width="1"/>
+      <text x="810" y="200" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="11" font-weight="700">Back-office</text>
+      <text x="810" y="216" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Sysadmins SSH</text>
+
+      <!-- Logs arrows → SIEM -->
+      <line x1="437" y1="236" x2="770" y2="136" stroke="#b388ff" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+      <text x="620" y="178" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="8" text-anchor="middle">Wazuh + Filebeat logs</text>
+    </svg>
+  </div>
+
+  <h3 class="sub">Chronologie de l'attaque (ce que vous allez détecter)</h3>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-left">
+        <div class="tl-dot" style="border-color:#ff9100;background:rgba(255,145,0,.2)"></div>
+        <div class="tl-line"></div>
+        <div class="tl-time">06:47</div>
+      </div>
+      <div class="tl-body">
+        <div class="tl-phase" style="color:#ff9100">Phase 1 — Reconnaissance</div>
+        <h4>Scan réseau et découverte de services</h4>
+        <p>L'attaquant, depuis un nœud Tor (<code>185.220.101.x</code>), effectue un scan Nmap complet du DMZ. Suricata détecte les sondes TCP SYN sur les ports 22, 80, 443, 3000, 8080. Les règles <em>emerging-scan</em> se déclenchent.</p>
+        <span class="tl-mitre" style="background:rgba(255,145,0,.1);border:1px solid rgba(255,145,0,.25);color:#ff9100">MITRE T1046 — Network Service Scanning</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left">
+        <div class="tl-dot" style="border-color:#ff5252;background:rgba(255,82,82,.2)"></div>
+        <div class="tl-line"></div>
+        <div class="tl-time">07:03</div>
+      </div>
+      <div class="tl-body">
+        <div class="tl-phase" style="color:#ff5252">Phase 2 — Accès initial</div>
+        <h4>Brute-force SSH sur le serveur web (192.168.50.10)</h4>
+        <p>247 tentatives d'authentification SSH en 12 minutes. Wazuh HIDS détecte les échecs dans <code>/var/log/auth.log</code> et génère une alerte de niveau critique. La corrélation SIEM relie ce flux à la même IP source du scan.</p>
+        <span class="tl-mitre" style="background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:#ff5252">MITRE T1110.001 — Brute Force: Password Guessing</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-last">
+        <div class="tl-dot" style="border-color:#b388ff;background:rgba(179,136,255,.2)"></div>
+        <div class="tl-line"></div>
+        <div class="tl-time">07:15</div>
+      </div>
+      <div class="tl-body">
+        <div class="tl-phase" style="color:#b388ff">Phase 3 — Exploitation</div>
+        <h4>Tentative d'injection SQL sur l'API de paiement</h4>
+        <p>Des requêtes malformées ciblent <code>/api/login</code> avec des payloads SQL classiques (<code>' OR '1'='1</code>). Suricata déclenche les règles <em>emerging-web_specific_apps</em>. Le F5/nginx RP bloque certaines requêtes, mais l'API back-end reçoit des variations encodées.</p>
+        <span class="tl-mitre" style="background:rgba(179,136,255,.1);border:1px solid rgba(179,136,255,.25);color:#b388ff">MITRE T1190 — Exploit Public-Facing Application</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout ci-warn">
+    <div class="ci">🎯</div>
+    <div>
+      <h4>Votre mission aujourd'hui</h4>
+      <p>Construire l'infrastructure SOC qui aurait permis de détecter ces 3 phases <strong>en temps réel</strong>, qualifier les alertes, et produire un rapport d'incident exploitable par le Tier 2. Vous serez l'analyste Tier 1 qui reçoit les alertes dans Kibana et doit décider en moins de 5 minutes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ THÉORIE ═══ -->
+<div class="sec" id="theorie">
+  <div class="sec-hd"><span class="sec-n">01</span><h2 class="sec-t">Théorie — SOC, SIEM et architecture défensive (1h)</h2></div>
+
+  <!-- 1.1 SOC -->
+  <h3 class="sub">1.1 — Le SOC : définition et fonctionnement</h3>
+  <div class="prose">
+    <p>Un <strong>Security Operations Center (SOC)</strong> est l'unité organisationnelle et technique chargée de surveiller en permanence la sécurité d'un système d'information. Pour SecureBank SA, c'est la dernière ligne de défense avant qu'une intrusion ne devienne une brèche de données bancaires.</p>
+    <p>Le SOC répond à une réalité simple : <em>aucun système n'est inviolable</em>. La question n'est pas "si" une attaque se produira, mais "quand" et "combien de temps restera-t-elle invisible". Le temps moyen de détection d'une intrusion (MTTD) est de <strong>197 jours</strong> dans les organisations sans SOC. Avec un SOC mature, il descend à quelques heures.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="an-lbl">🎯 Analogie bancaire directe</div>
+    <div class="an-txt">SecureBank SA a des caméras dans ses agences physiques, des gardes, des coffres avec alarmes. Le SOC, c'est l'équivalent pour l'infrastructure numérique : <strong>Suricata = les caméras aux entrées du réseau</strong>, <strong>Wazuh = les capteurs de mouvement à l'intérieur des serveurs</strong>, <strong>Elastic SIEM = le centre de vidéosurveillance</strong> qui centralise tout, et <strong>l'analyste Tier 1 = le vigile qui regarde les écrans 24h/24</strong>. Sans ce dispositif, l'attaquant qui a pénétré le réseau peut rester invisible pendant des mois.</div>
+  </div>
+
+  <!-- Tiers SVG -->
+  <h4 class="ss">Les 3 niveaux d'analystes SOC</h4>
+  <div class="svgbox">
+    <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="at" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <!-- T1 -->
+      <rect x="10" y="24" width="228" height="158" rx="10" fill="rgba(77,166,255,.07)" stroke="rgba(77,166,255,.3)" stroke-width="1.5"/>
+      <text x="124" y="50" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="14" font-weight="800">Tier 1 — Vous aujourd'hui</text>
+      <text x="124" y="68" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Analyste SOC junior</text>
+      <text x="28" y="92" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Surveille les alertes SIEM 24/7</text>
+      <text x="28" y="110" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Triage : vrai / faux positif</text>
+      <text x="28" y="128" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Rédige les fiches d'incident</text>
+      <text x="28" y="146" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Escalade au Tier 2 si besoin</text>
+      <text x="28" y="164" fill="#4da6ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">MTTD cible : &lt; 15 minutes</text>
+      <!-- Arrow -->
+      <line x1="238" y1="103" x2="292" y2="103" stroke="#4da6ff" stroke-width="1.5" marker-end="url(#at)"/>
+      <text x="265" y="96" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">escalade</text>
+      <!-- T2 -->
+      <rect x="294" y="24" width="228" height="158" rx="10" fill="rgba(179,136,255,.07)" stroke="rgba(179,136,255,.3)" stroke-width="1.5"/>
+      <text x="408" y="50" text-anchor="middle" fill="#b388ff" font-family="Syne,sans-serif" font-size="14" font-weight="800">Tier 2 — Investigateur</text>
+      <text x="408" y="68" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Analyste senior / IR</text>
+      <text x="312" y="92" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Analyse forensique approfondie</text>
+      <text x="312" y="110" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Corrèle les incidents complexes</text>
+      <text x="312" y="128" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Threat hunting proactif</text>
+      <text x="312" y="146" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Rédige les rapports détaillés</text>
+      <text x="312" y="164" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">Expérience : 3 – 5 ans</text>
+      <!-- Arrow -->
+      <line x1="522" y1="103" x2="576" y2="103" stroke="#b388ff" stroke-width="1.5" marker-end="url(#at)"/>
+      <text x="549" y="96" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">escalade</text>
+      <!-- T3 -->
+      <rect x="578" y="24" width="228" height="158" rx="10" fill="rgba(0,230,118,.06)" stroke="rgba(0,230,118,.25)" stroke-width="1.5"/>
+      <text x="692" y="50" text-anchor="middle" fill="#00e676" font-family="Syne,sans-serif" font-size="14" font-weight="800">Tier 3 — Expert CSIRT</text>
+      <text x="692" y="68" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Incident Response / Threat Intel</text>
+      <text x="596" y="92" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Réponse à incident (IR)</text>
+      <text x="596" y="110" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Reverse engineering malware</text>
+      <text x="596" y="128" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Rédige les playbooks SOC</text>
+      <text x="596" y="146" fill="#8099b8" font-family="Source Serif 4,serif" font-size="12">▸ Contact autorités / CERT-MA</text>
+      <text x="596" y="164" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">Expérience : 8+ ans</text>
+    </svg>
+  </div>
+
+  <!-- 1.2 SIEM -->
+  <hr class="d">
+  <h3 class="sub">1.2 — Le SIEM : intelligence centrale du SOC</h3>
+  <div class="prose">
+    <p>Le <strong>SIEM (Security Information and Event Management)</strong> est le système qui transforme des millions de lignes de logs bruts en <em>alertes exploitables</em>. Sans SIEM, un analyste recevrait chaque jour des centaines de milliers d'événements de dizaines de sources différentes — impossible à traiter manuellement.</p>
+    <p>Pour SecureBank SA, le SIEM reçoit simultanément : les logs de <strong>pfSense FW-DMZ</strong> (règles firewall franchies), les alertes <strong>Suricata</strong> (trafic réseau suspect), les logs <strong>Wazuh</strong> de chaque serveur (tentatives SSH, modifications de fichiers), et les logs <strong>Apache/nginx</strong> (requêtes web anormales). Sans corrélation, l'attaque de ce matin serait restée invisible.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="an-lbl">🏦 Analogie bancaire</div>
+    <div class="an-txt">Dans une agence physique, vous avez des dizaines de caméras, des capteurs sur les coffres, des lecteurs de badges, des capteurs de mouvement. Seul, un vigile ne peut pas regarder 40 écrans en même temps. Le SIEM, c'est le <strong>logiciel qui fusionne tous ces flux</strong> et vous dit : <em>"Caméra 3 + capteur coffre A + badge invalide = alarme"</em>. Un seul événement = bénin. Les trois combinés en 2 minutes = alerte prioritaire. C'est la <strong>corrélation</strong>.</div>
+  </div>
+
+  <!-- Stepper cycle SIEM -->
+  <div class="stp" id="stp-siem">
+    <div class="stp-nav">
+      <button class="stp-btn on" onclick="sStep('stp-siem',0)">1. Collecte</button>
+      <button class="stp-btn" onclick="sStep('stp-siem',1)">2. Normalisation</button>
+      <button class="stp-btn" onclick="sStep('stp-siem',2)">3. Corrélation</button>
+      <button class="stp-btn" onclick="sStep('stp-siem',3)">4. Alerte</button>
+      <button class="stp-btn" onclick="sStep('stp-siem',4)">5. Réponse</button>
+    </div>
+    <div class="stp-body">
+      <div class="stp-panel on">
+        <h4>📥 Collecte — Tous les logs vers un point central</h4>
+        <p>Le SIEM ingère les logs de <strong>toutes les sources</strong> de l'infrastructure SecureBank SA. Ces logs arrivent dans des formats radicalement différents :</p>
+        <div class="cb"><div class="ch"><span class="cl">Sources réelles SecureBank</span></div>
+<pre><span class="cm"># pfSense syslog (filtrage firewall)</span>
+<span class="va">Apr 11 06:47:23</span> pfsense filterlog: <span class="nu">4</span>,,,block,WAN,in,<span class="st">185.220.101.47</span>->192.168.50.10,TCP,SYN
+
+<span class="cm"># Suricata eve.json (alerte IDS)</span>
+{<span class="st">"timestamp"</span>:<span class="st">"2026-04-11T06:47:23"</span>,<span class="st">"event_type"</span>:<span class="st">"alert"</span>,
+ <span class="st">"src_ip"</span>:<span class="st">"185.220.101.47"</span>,<span class="st">"alert"</span>:{<span class="st">"signature"</span>:<span class="st">"ET SCAN Nmap"</span>,<span class="st">"severity"</span>:<span class="nu">1</span>}}
+
+<span class="cm"># Wazuh (auth.log SSH)</span>
+<span class="va">Apr 11 07:03:11</span> web01 sshd[4421]: Failed password for <span class="fn">admin</span> from <span class="st">185.220.101.47</span> port <span class="nu">58432</span>
+
+<span class="cm"># Apache access log (requête HTTP)</span>
+<span class="st">185.220.101.47</span> - - [11/Apr/2026:07:15:44] <span class="st">"POST /api/login HTTP/1.1"</span> <span class="nu">400</span> 212</pre></div>
+        <p>Trois formats différents, une seule IP source — le SIEM va les relier automatiquement.</p>
+      </div>
+      <div class="stp-panel">
+        <h4>🔄 Normalisation ECS — Un langage commun</h4>
+        <p>L'ECS (Elastic Common Schema) traduit tous ces formats en champs standardisés. Résultat : une seule requête KQL permet d'interroger simultanément Suricata, Wazuh et Apache.</p>
+        <div class="cb"><div class="ch"><span class="cl">Après normalisation ECS</span><span class="cf">Kibana Discover</span></div>
+<pre><span class="cm"># Tous ces logs partagent maintenant les MÊMES champs :</span>
+
+<span class="va">source.ip</span>           : <span class="st">"185.220.101.47"</span>   <span class="cm"># IP attaquant — uniforme</span>
+<span class="va">destination.ip</span>      : <span class="st">"192.168.50.10"</span>    <span class="cm"># Serveur web SecureBank</span>
+<span class="va">event.module</span>        : <span class="st">"suricata"</span>         <span class="cm"># ou "wazuh", "apache"</span>
+<span class="va">event.outcome</span>       : <span class="st">"failure"</span>          <span class="cm"># uniforme sur toutes les sources</span>
+<span class="va">network.transport</span>   : <span class="st">"tcp"</span>
+
+<span class="cm"># Requête KQL unifiée dans Kibana :</span>
+source.ip: <span class="st">"185.220.101.47"</span> <span class="kw">AND</span> event.outcome: <span class="st">"failure"</span>
+<span class="cm"># → affiche TOUS les événements liés à cet attaquant, toutes sources confondues</span></pre></div>
+        <div class="callout ci-info"><div class="ci">💡</div><div><h4>Sans ECS : l'enfer des formats</h4><p>Sans normalisation, "l'IP source" s'appellerait <code>src_ip</code> dans Suricata, <code>client_ip</code> dans Apache, et <code>remote_addr</code> dans nginx. Impossible d'écrire une règle de corrélation cohérente. ECS résout ce problème en imposant <code>source.ip</code> pour tout le monde.</p></div></div>
+      </div>
+      <div class="stp-panel">
+        <h4>🔗 Corrélation — Relier les événements pour révéler l'attaque</h4>
+        <p>C'est la valeur principale du SIEM. Un événement isolé = bruit. Plusieurs événements corrélés = signal d'attaque. Voici comment le SIEM détecte l'attaque SecureBank de ce matin :</p>
+        <div class="svgbox" style="margin:10px 0">
+          <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+            <rect x="10" y="18" width="148" height="44" rx="7" fill="rgba(255,145,0,.09)" stroke="rgba(255,145,0,.3)" stroke-width="1"/>
+            <text x="84" y="37" text-anchor="middle" fill="#ff9100" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">06:47 Nmap scan</text>
+            <text x="84" y="53" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">185.220.101.47 → DMZ</text>
+            <rect x="10" y="78" width="148" height="44" rx="7" fill="rgba(255,82,82,.09)" stroke="rgba(255,82,82,.3)" stroke-width="1"/>
+            <text x="84" y="97" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">07:03 SSH BF ×247</text>
+            <text x="84" y="113" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">même IP → port 22</text>
+            <rect x="10" y="138" width="148" height="44" rx="7" fill="rgba(179,136,255,.09)" stroke="rgba(179,136,255,.3)" stroke-width="1"/>
+            <text x="84" y="157" text-anchor="middle" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">07:15 SQLi /api/login</text>
+            <text x="84" y="173" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">même IP → port 3000</text>
+            <line x1="158" y1="40" x2="242" y2="99" stroke="#ff9100" stroke-width="1.5" marker-end="url(#ac)"/>
+            <line x1="158" y1="100" x2="242" y2="100" stroke="#ff5252" stroke-width="1.5" marker-end="url(#ac)"/>
+            <line x1="158" y1="160" x2="242" y2="112" stroke="#b388ff" stroke-width="1.5" marker-end="url(#ac)"/>
+            <rect x="244" y="70" width="170" height="60" rx="9" fill="rgba(77,166,255,.1)" stroke="rgba(77,166,255,.45)" stroke-width="1.5"/>
+            <text x="329" y="94" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="13" font-weight="700">SIEM Corrélation</text>
+            <text x="329" y="111" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">Même IP · 28 min · 3 vecteurs</text>
+            <text x="329" y="124" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="8">kill chain détectée !</text>
+            <line x1="414" y1="100" x2="460" y2="100" stroke="#ff5252" stroke-width="2.5" marker-end="url(#ac)"/>
+            <rect x="462" y="56" width="188" height="88" rx="9" fill="rgba(255,82,82,.1)" stroke="rgba(255,82,82,.5)" stroke-width="2"/>
+            <text x="556" y="84" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="14" font-weight="800">🚨 ALERTE P1</text>
+            <text x="556" y="103" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="9">Attaque coordonnée</text>
+            <text x="556" y="118" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="9">Recon → BF → SQLi</text>
+            <text x="556" y="133" text-anchor="middle" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="9">→ Escalade Tier 2 immédiate</text>
+            <text x="556" y="158" text-anchor="middle" fill="#3d5070" font-family="Source Serif 4,serif" font-size="10">Seuls = anodins · Ensemble = kill chain</text>
+          </svg>
+        </div>
+        <div class="callout ci-warn"><div class="ci">⚡</div><div><h4>La règle EQL qui détecte ceci automatiquement</h4><p>Dans Kibana Security, une règle EQL de type "sequence" peut détecter : <em>scan Nmap depuis IP X, suivi de brute-force SSH depuis la même IP, suivi d'une tentative SQLi</em> — tout ça en moins de 30 minutes. Sans SIEM, cela nécessiterait 3 analystes regardant 3 outils différents.</p></div></div>
+      </div>
+      <div class="stp-panel">
+        <h4>🔔 Alerte — Prioriser pour l'analyste</h4>
+        <p>Kibana génère des alertes enrichies avec le contexte nécessaire à la décision rapide :</p>
+        <div class="tw"><table>
+          <thead><tr><th>Champ alerte</th><th>Valeur — Incident SecureBank</th><th>Utilité pour l'analyste</th></tr></thead>
+          <tbody>
+            <tr><td><code>signal.rule.severity</code></td><td class="tr">Critical</td><td>Priorité maximale, action immédiate</td></tr>
+            <tr><td><code>source.ip</code></td><td class="tc">185.220.101.47</td><td>IP à bloquer / investiguer</td></tr>
+            <tr><td><code>source.geo.country_name</code></td><td>Netherlands (Tor Exit)</td><td>Attribution géographique</td></tr>
+            <tr><td><code>threat.technique.id</code></td><td class="tc">T1110, T1190, T1046</td><td>Mapping MITRE ATT&amp;CK</td></tr>
+            <tr><td><code>kibana.alert.risk_score</code></td><td class="tr">98 / 100</td><td>Score de risque automatique</td></tr>
+            <tr><td><code>event.first_seen</code></td><td class="tc">06:47:23 UTC+1</td><td>Début de l'attaque</td></tr>
+          </tbody>
+        </table></div>
+        <p>En 30 secondes, l'analyste Tier 1 voit : qui attaque, depuis où, quelles techniques, depuis quand. C'est l'information nécessaire pour décider d'escalader en P1 sans perdre de temps.</p>
+      </div>
+      <div class="stp-panel">
+        <h4>🛡️ Réponse — Décision Tier 1</h4>
+        <p>Face à l'incident SecureBank, le processus de décision Tier 1 est structuré :</p>
+        <div class="tw"><table>
+          <thead><tr><th>Classification</th><th>Critères</th><th>Action Tier 1</th><th>SLA</th></tr></thead>
+          <tbody>
+            <tr><td>Faux positif</td><td>Source légitime connue</td><td class="tg">Documenter + whitelister</td><td>15 min</td></tr>
+            <tr><td>Anomalie basse</td><td>Événement isolé, faible risque</td><td class="to">Watchlist + surveillance</td><td>30 min</td></tr>
+            <tr><td>Incident confirmé</td><td>Attaque réelle identifiée</td><td class="to">Escalade Tier 2 + ticket IR</td><td>10 min</td></tr>
+            <tr><td><strong>Attaque active P1</strong></td><td>Kill chain en cours (comme ce matin)</td><td class="tr">Blocage + CSIRT + Direction</td><td>5 min</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout ci-danger"><div class="ci">🏦</div><div><h4>Contexte réglementaire bancaire — Bank Al-Maghrib</h4><p>En contexte bancaire marocain, SecureBank SA est soumise aux directives de Bank Al-Maghrib sur la cybersécurité. Une intrusion non reportée dans les délais est une <strong>infraction réglementaire</strong>. Le SOC doit notifier le CERT-MA dans les 72 heures en cas de violation de données. C'est pour ça que le rapport d'incident produit par le Tier 1 doit être précis et horodaté.</p></div></div>
+      </div>
+    </div>
+    <div class="stp-foot">
+      <button class="btn btn-g" onclick="sPrev('stp-siem')">← Précédent</button>
+      <div><div class="dots" id="stp-siem-d"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="scnt" id="stp-siem-c">1 / 5</div></div>
+      <button class="btn btn-p" onclick="sNext('stp-siem')">Suivant →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ OUTILS ═══ -->
+<div class="sec" id="outils">
+  <div class="sec-hd"><span class="sec-n">02</span><h2 class="sec-t">Les outils du SOC SecureBank</h2></div>
+
+  <div class="cgrid">
+    <div class="card cb2">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">pfSense / OPNsense</div>
+      <div class="card-body">Firewall open-source (FreeBSD). Contrôle tout le trafic entrant/sortant du DMZ bancaire. Génère des logs de filtrage (paquets bloqués/acceptés) envoyés vers le SIEM. Premier point de visibilité réseau.</div>
+      <div class="card-tag">Firewall · NAT · Gateway · syslog</div>
+    </div>
+    <div class="card cg2">
+      <div class="card-icon">🔎</div>
+      <div class="card-title">Suricata IDS/IPS</div>
+      <div class="card-body">Moteur d'analyse réseau par signatures. Tourne sur pfSense, inspecte chaque paquet, compare aux règles Emerging Threats et génère des alertes JSON (<code>eve.json</code>). Détecte le scan Nmap et les tentatives SQLi.</div>
+      <div class="card-tag">IDS · Signatures ET-Open · eve.json</div>
+    </div>
+    <div class="card cp2">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Wazuh HIDS</div>
+      <div class="card-body">Agent sur chaque serveur du DMZ. Surveille les logs système (<code>auth.log</code>, Apache), l'intégrité des fichiers (FIM) et peut réagir automatiquement (bloquer une IP avec iptables). Détecte le brute-force SSH.</div>
+      <div class="card-tag">HIDS · FIM · Active-Response</div>
+    </div>
+    <div class="card cc2">
+      <div class="card-icon">📦</div>
+      <div class="card-title">Filebeat</div>
+      <div class="card-body">Agent collecteur Elastic (quelques Mo de RAM). Lit les fichiers log en temps réel, normalise en ECS, et envoie vers Elasticsearch. Modules officiels pour Suricata, Apache, nginx, syslog.</div>
+      <div class="card-tag">Log shipper · ECS · Modules</div>
+    </div>
+    <div class="card cb2">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Elasticsearch</div>
+      <div class="card-body">Base de données orientée recherche full-text. Indexe des milliards d'événements et répond en millisecondes. Moteur de stockage et de recherche du SIEM. Requêtes via API REST sur le port 9200.</div>
+      <div class="card-tag">Index · API REST · :9200</div>
+    </div>
+    <div class="card co2">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Kibana SIEM</div>
+      <div class="card-body">Interface analyste SOC. Dashboard temps réel, règles de détection EQL/KQL, timeline d'investigation, gestion des alertes et des cas. Point central du travail quotidien du Tier 1 de SecureBank.</div>
+      <div class="card-tag">Dashboard · Alertes · EQL · :5601</div>
+    </div>
+  </div>
+
+  <!-- IDS vs IPS -->
+  <hr class="d">
+  <h3 class="sub" id="ids-ips">IDS vs IPS — Différence critique pour SecureBank</h3>
+  <div class="prose">
+    <p>Cette distinction est fondamentale dans un contexte bancaire. SecureBank SA ne peut pas se permettre de bloquer du trafic légitime — les virements de clients, les connexions des sysadmins, les flux inter-agences. C'est pourquoi le choix IDS/IPS doit être réfléchi.</p>
+  </div>
+
+  <div class="svgbox" id="ids-ips">
+    <div class="svgtitle">IDS passif vs IPS inline — Impact sur le trafic SecureBank</div>
+    <div class="tab-bar">
+      <button class="tab-btn on" onclick="setTab('idsips-tabs',0)">IDS — Mode passif (Séance 1)</button>
+      <button class="tab-btn" onclick="setTab('idsips-tabs',1)">IPS — Mode inline (Séance 3)</button>
+      <button class="tab-btn" onclick="setTab('idsips-tabs',2)">Tableau comparatif</button>
+    </div>
+    <div id="idsips-tabs">
+      <div class="tab-panel on">
+        <svg viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="id1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="id2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+          <!-- Attaquant -->
+          <rect x="10" y="60" width="96" height="52" rx="7" fill="rgba(255,82,82,.1)" stroke="rgba(255,82,82,.3)" stroke-width="1"/>
+          <text x="58" y="83" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="11" font-weight="700">Attaquant</text>
+          <text x="58" y="100" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">185.220.101.x</text>
+          <line x1="106" y1="86" x2="198" y2="86" stroke="#ff5252" stroke-width="2" marker-end="url(#id2)"/>
+          <text x="152" y="77" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="8">paquet SQLi</text>
+          <!-- pfSense -->
+          <rect x="200" y="44" width="148" height="84" rx="9" fill="rgba(77,166,255,.08)" stroke="rgba(77,166,255,.4)" stroke-width="2"/>
+          <text x="274" y="68" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="13" font-weight="700">pfSense</text>
+          <rect x="216" y="78" width="116" height="22" rx="4" fill="rgba(0,230,118,.1)" stroke="rgba(0,230,118,.3)" stroke-width="1"/>
+          <text x="274" y="93" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">Suricata IDS passif</text>
+          <text x="274" y="116" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">copie miroir analysée</text>
+          <!-- paquet passe -->
+          <line x1="348" y1="86" x2="490" y2="86" stroke="#ff5252" stroke-width="2" marker-end="url(#id2)"/>
+          <text x="420" y="77" text-anchor="middle" fill="#ff9100" font-family="JetBrains Mono,monospace" font-size="8">⚠ paquet PASSE !</text>
+          <!-- Serveur API -->
+          <rect x="492" y="60" width="130" height="52" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.25)" stroke-width="1"/>
+          <text x="557" y="83" text-anchor="middle" fill="#ff9100" font-family="Syne,sans-serif" font-size="11" font-weight="700">API Paiement</text>
+          <text x="557" y="99" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">reçoit la requête SQLi</text>
+          <!-- Alerte SIEM -->
+          <line x1="274" y1="128" x2="680" y2="148" stroke="#ff9100" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#id1)"/>
+          <rect x="622" y="150" width="130" height="32" rx="6" fill="rgba(255,145,0,.1)" stroke="rgba(255,145,0,.3)" stroke-width="1"/>
+          <text x="687" y="170" text-anchor="middle" fill="#ff9100" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">🔔 Alerte SIEM</text>
+        </svg>
+        <div class="callout ci-info"><div class="ci">ℹ️</div><div><h4>IDS = observer, pas bloquer</h4><p>En mode IDS, Suricata voit une copie du trafic (miroir). Il alerte sans interférer. Le paquet SQLi <strong>atteint quand même l'API</strong>. Mais l'analyste reçoit l'alerte en temps réel. Avantage : aucun risque de couper un virement légitime. C'est le mode utilisé en <strong>Séance 1</strong> — on apprend à voir avant d'agir.</p></div></div>
+      </div>
+      <div class="tab-panel">
+        <svg viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ip1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="ip2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+          <rect x="10" y="60" width="96" height="52" rx="7" fill="rgba(255,82,82,.1)" stroke="rgba(255,82,82,.3)" stroke-width="1"/>
+          <text x="58" y="83" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="11" font-weight="700">Attaquant</text>
+          <text x="58" y="100" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="9">185.220.101.x</text>
+          <line x1="106" y1="86" x2="198" y2="86" stroke="#ff5252" stroke-width="2" marker-end="url(#ip2)"/>
+          <rect x="200" y="38" width="148" height="100" rx="9" fill="rgba(77,166,255,.08)" stroke="rgba(77,166,255,.5)" stroke-width="2"/>
+          <text x="274" y="62" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="13" font-weight="700">pfSense</text>
+          <rect x="216" y="70" width="116" height="22" rx="4" fill="rgba(255,82,82,.12)" stroke="rgba(255,82,82,.4)" stroke-width="1"/>
+          <text x="274" y="85" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">Suricata IPS inline</text>
+          <rect x="216" y="100" width="116" height="26" rx="4" fill="rgba(0,230,118,.12)" stroke="rgba(0,230,118,.4)" stroke-width="1"/>
+          <text x="274" y="118" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700">🚫 DROP paquet</text>
+          <!-- blocked -->
+          <line x1="348" y1="86" x2="498" y2="86" stroke="#3d5070" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <text x="420" y="74" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="20">✕</text>
+          <text x="420" y="104" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="9">bloqué avant d'arriver</text>
+          <rect x="500" y="60" width="130" height="52" rx="7" fill="rgba(0,230,118,.07)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
+          <text x="565" y="83" text-anchor="middle" fill="#00e676" font-family="Syne,sans-serif" font-size="11" font-weight="700">API Paiement</text>
+          <text x="565" y="99" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="8">✓ protégée</text>
+          <line x1="274" y1="138" x2="620" y2="155" stroke="#ff9100" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ip1)"/>
+          <rect x="622" y="156" width="130" height="28" rx="6" fill="rgba(255,145,0,.1)" stroke="rgba(255,145,0,.3)" stroke-width="1"/>
+          <text x="687" y="174" text-anchor="middle" fill="#ff9100" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">🔔 Alerte + DROP</text>
+        </svg>
+        <div class="callout ci-danger"><div class="ci">🚨</div><div><h4>IPS — Puissant mais risqué sans tuning</h4><p>En IPS, Suricata est <strong>en coupure</strong> : il analyse chaque paquet AVANT qu'il arrive à destination. Si une règle est trop sensible, un virement légitime de 50 000 DH peut être bloqué. Dans un contexte bancaire, cela est inacceptable. D'où la règle d'or : <strong>IDS d'abord → tuner les règles → IPS ensuite</strong>. Ce mode sera activé en Séance 3 après 2 séances d'observation.</p></div></div>
+      </div>
+      <div class="tab-panel">
+        <div class="tw"><table>
+          <thead><tr><th>Critère</th><th>IDS (Séance 1)</th><th>IPS (Séance 3)</th></tr></thead>
+          <tbody>
+            <tr><td>Position réseau</td><td class="tc">Copie miroir / SPAN</td><td class="tc">En coupure inline</td></tr>
+            <tr><td>Action sur attaque</td><td class="to">Alerte uniquement</td><td class="tg">Alerte + DROP paquet</td></tr>
+            <tr><td>Trafic atteint le serveur ?</td><td class="tr">Oui</td><td class="tg">Non (bloqué)</td></tr>
+            <tr><td>Risque faux positif</td><td class="tg">Nul (passif)</td><td class="tr">Bloque virement légitime</td></tr>
+            <tr><td>Latence introduite</td><td class="tg">Nulle</td><td class="to">~1-5 ms</td></tr>
+            <tr><td>Tuning requis avant activation</td><td class="tg">Non</td><td class="tr">Obligatoire</td></tr>
+            <tr><td>Cas d'usage SecureBank</td><td class="tc">Observation, apprentissage</td><td class="tc">Production après validation</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline SIEM -->
+  <hr class="d">
+  <h3 class="sub" id="pipeline">Pipeline Elastic — du log à l'alerte</h3>
+  <div class="stp" id="stp-elk">
+    <div class="stp-nav">
+      <button class="stp-btn on" onclick="sStep('stp-elk',0)">Elasticsearch</button>
+      <button class="stp-btn" onclick="sStep('stp-elk',1)">Filebeat</button>
+      <button class="stp-btn" onclick="sStep('stp-elk',2)">Kibana SIEM</button>
+      <button class="stp-btn" onclick="sStep('stp-elk',3)">Wazuh</button>
+    </div>
+    <div class="stp-body">
+      <div class="stp-panel on">
+        <h4>🔍 Elasticsearch — La mémoire du SOC</h4>
+        <p>Elasticsearch est le moteur de stockage et de recherche. Pour SecureBank SA, il stocke <strong>tous les logs</strong> des 6 derniers mois — c'est obligatoire pour la conformité réglementaire bancaire. Un index par jour, une recherche en millisecondes.</p>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">Test connexion ES</span></div>
+<pre><span class="cm"># Vérifier que le cluster Elasticsearch est sain</span>
+<span class="fn">curl</span> <span class="op">-s</span> http://localhost:9200/_cluster/health | <span class="fn">python3</span> <span class="op">-m</span> json.tool
+<span class="cm"># Attendu : "status": "green" ou "yellow"</span>
+
+<span class="cm"># Lister les index créés par Filebeat/Wazuh</span>
+<span class="fn">curl</span> <span class="op">-s</span> <span class="st">"http://localhost:9200/_cat/indices?v&s=index"</span>
+<span class="cm"># Exemple : securebank-suricata-2026.04.11 → 48 237 docs</span>
+<span class="cm">#           securebank-wazuh-2026.04.11    → 12 891 docs</span>
+<span class="cm">#           securebank-apache-2026.04.11   → 3 402 docs</span></pre></div>
+      </div>
+      <div class="stp-panel">
+        <h4>📦 Filebeat — Le collecteur temps réel</h4>
+        <p>Filebeat est l'agent léger déployé sur chaque serveur (web01, api01, proxy). Il surveille les fichiers de log en temps réel (<code>tail -f</code> intelligent) et envoie chaque nouvelle ligne vers Elasticsearch avec latence &lt; 1 seconde.</p>
+        <div class="cb"><div class="ch"><span class="cl">yaml</span><span class="cf">/etc/filebeat/filebeat.yml — SecureBank</span></div>
+<pre><span class="va">filebeat.modules</span>:
+  <span class="op">-</span> <span class="va">module</span>: <span class="st">suricata</span>     <span class="cm"># alertes IDS pfSense</span>
+  <span class="op">-</span> <span class="va">module</span>: <span class="st">apache</span>       <span class="cm"># logs portail web</span>
+  <span class="op">-</span> <span class="va">module</span>: <span class="st">nginx</span>        <span class="cm"># logs reverse proxy</span>
+  <span class="op">-</span> <span class="va">module</span>: <span class="st">system</span>       <span class="cm"># auth.log, syslog</span>
+
+<span class="va">filebeat.inputs</span>:
+  <span class="op">-</span> <span class="va">type</span>: <span class="st">syslog</span>          <span class="cm"># reçoit syslog pfSense</span>
+    <span class="va">protocol.udp.host</span>: <span class="st">"0.0.0.0:514"</span>
+    <span class="va">tags</span>: [<span class="st">"pfsense"</span>, <span class="st">"securebank-fw"</span>]
+
+<span class="va">output.elasticsearch</span>:
+  <span class="va">hosts</span>: [<span class="st">"192.168.10.100:9200"</span>]  <span class="cm"># SIEM LAN</span>
+  <span class="va">index</span>: <span class="st">"securebank-%{[agent.name]}-%{+yyyy.MM.dd}"</span>
+
+<span class="va">setup.kibana.host</span>: <span class="st">"192.168.10.100:5601"</span>
+<span class="va">setup.dashboards.enabled</span>: <span class="kw">true</span>  <span class="cm"># dashboards Suricata prêts</span></pre></div>
+      </div>
+      <div class="stp-panel">
+        <h4>📊 Kibana SIEM — L'écran de l'analyste</h4>
+        <p>Kibana Security est l'interface que l'analyste SOC de SecureBank regarde en permanence. Les 5 vues essentielles :</p>
+        <ul>
+          <li><strong>Security → Overview</strong> : tableau de bord global — tendances d'alertes, top attaquants, événements récents</li>
+          <li><strong>Security → Alerts</strong> : liste priorisée des alertes actives avec severity, MITRE ATT&amp;CK, source IP</li>
+          <li><strong>Security → Rules</strong> : gérer les règles EQL/KQL de détection. C'est ici qu'on crée la règle brute-force</li>
+          <li><strong>Security → Timeline</strong> : reconstituer la chronologie de l'attaque pour le rapport IR</li>
+          <li><strong>Discover</strong> : requêtes libres KQL sur l'ensemble des logs — pour l'investigation ad hoc</li>
+        </ul>
+        <div class="cb"><div class="ch"><span class="cl">KQL</span><span class="cf">Kibana Discover — Requêtes essentielles</span></div>
+<pre><span class="cm"># Tous les événements de l'attaquant</span>
+source.ip: <span class="st">"185.220.101.47"</span>
+
+<span class="cm"># Alertes Suricata critique/haute depuis 1h</span>
+event.module: suricata <span class="kw">AND</span> suricata.eve.alert.severity: (<span class="nu">1</span> <span class="kw">OR</span> <span class="nu">2</span>)
+
+<span class="cm"># Brute-force SSH (Wazuh)</span>
+event.module: wazuh <span class="kw">AND</span> rule.groups: authentication_failed
+
+<span class="cm"># Requêtes POST suspectes sur l'API paiement</span>
+url.path: <span class="st">"/api/login"</span> <span class="kw">AND</span> http.request.method: POST <span class="kw">AND</span> http.response.status_code: <span class="nu">400</span></pre></div>
+      </div>
+      <div class="stp-panel">
+        <h4>🤖 Wazuh — La surveillance hôte</h4>
+        <p>Wazuh surveille l'intérieur de chaque serveur du DMZ SecureBank. Trois fonctions critiques dans ce scénario :</p>
+        <ul>
+          <li><strong>Log Analysis</strong> : lit <code>/var/log/auth.log</code> et déclenche la règle 5712 "SSH brute-force attack" après 8 échecs depuis la même IP</li>
+          <li><strong>FIM (File Integrity Monitoring)</strong> : si l'attaquant réussit à se connecter et modifie <code>/etc/passwd</code> ou un fichier PHP, Wazuh génère une alerte critique immédiate</li>
+          <li><strong>Active Response</strong> : configuré en séance 3 — Wazuh peut exécuter automatiquement <code>iptables -A INPUT -s 185.220.101.47 -j DROP</code> après détection de brute-force</li>
+        </ul>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-VICTIME — Vérifier agent Wazuh</span></div>
+<pre><span class="cm"># Sur le manager (VM-ELASTIC)</span>
+<span class="fn">/var/ossec/bin/agent_control</span> <span class="op">-l</span>
+<span class="cm"># → ID: 001  Name: web01-securebank  Status: Active</span>
+<span class="cm"># → ID: 002  Name: api01-securebank  Status: Active</span>
+
+<span class="cm"># Voir les alertes Wazuh en temps réel</span>
+<span class="fn">tail</span> <span class="op">-f</span> /var/ossec/logs/alerts/alerts.json | <span class="fn">python3</span> <span class="op">-m</span> json.tool</pre></div>
+      </div>
+    </div>
+    <div class="stp-foot">
+      <button class="btn btn-g" onclick="sPrev('stp-elk')">← Précédent</button>
+      <div><div class="dots" id="stp-elk-d"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="scnt" id="stp-elk-c">1 / 4</div></div>
+      <button class="btn btn-p" onclick="sNext('stp-elk')">Suivant →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ TP ═══ -->
+<div class="sec" id="tp">
+  <div class="sec-hd"><span class="sec-n">03</span><h2 class="sec-t">TP Lab — Construire le SOC SecureBank (2h30)</h2></div>
+
+  <div class="callout ci-info"><div class="ci">🎯</div><div><h4>Objectif</h4><p>Reproduire l'infrastructure SOC de SecureBank SA en lab. Simuler les 3 phases d'attaque depuis Kali et observer les alertes dans Kibana. Chaque binôme produit un dashboard SOC opérationnel et une fiche d'incident.</p></div></div>
+
+  <!-- Topo VM -->
+  <h3 class="sub">Topologie VM du lab</h3>
+  <div class="topo">
+    <div class="svgbox" style="margin-bottom:18px">
+      <div class="svgtitle">Lab SecureBank — 4 VMs / réseau interne isolé</div>
+      <svg viewBox="0 0 820 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="lt1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4da6ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          <marker id="lt2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#00e676" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          <marker id="lt3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        </defs>
+        <!-- VM Kali -->
+        <rect x="10" y="100" width="118" height="72" rx="9" fill="rgba(255,82,82,.1)" stroke="rgba(255,82,82,.35)" stroke-width="1.5"/>
+        <text x="69" y="127" text-anchor="middle" fill="#ff5252" font-family="Syne,sans-serif" font-size="13" font-weight="800">VM-KALI</text>
+        <text x="69" y="144" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">NAT (WAN simulé)</text>
+        <text x="69" y="160" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="9">⚔️ Red Team</text>
+
+        <!-- WAN link dashed -->
+        <line x1="128" y1="136" x2="194" y2="136" stroke="#ff5252" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#lt3)"/>
+        <text x="161" y="126" text-anchor="middle" fill="#ff5252" font-family="JetBrains Mono,monospace" font-size="8">WAN/NAT</text>
+
+        <!-- VM pfSense -->
+        <rect x="196" y="76" width="152" height="120" rx="10" fill="rgba(77,166,255,.09)" stroke="rgba(77,166,255,.5)" stroke-width="2"/>
+        <text x="272" y="103" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="14" font-weight="800">VM-pfSense</text>
+        <text x="272" y="120" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">WAN: NAT · LAN: 192.168.50.1</text>
+        <rect x="212" y="132" width="120" height="22" rx="5" fill="rgba(0,230,118,.1)" stroke="rgba(0,230,118,.3)" stroke-width="1"/>
+        <text x="272" y="147" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">Suricata IDS</text>
+        <text x="272" y="164" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">FreeBSD · 512 Mo · 2 NICs</text>
+        <text x="272" y="180" text-anchor="middle" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="8">→ syslog UDP:514 → VM-SIEM</text>
+
+        <!-- LAN arrows -->
+        <line x1="348" y1="136" x2="394" y2="136" stroke="#4da6ff" stroke-width="2" marker-end="url(#lt1)"/>
+        <text x="371" y="126" text-anchor="middle" fill="#4da6ff" font-family="JetBrains Mono,monospace" font-size="8">LAN</text>
+        <text x="371" y="150" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="7">Host-Only</text>
+
+        <!-- Réseau LAN zone -->
+        <rect x="396" y="18" width="416" height="244" rx="10" fill="rgba(77,166,255,.02)" stroke="rgba(77,166,255,.15)" stroke-width="1" stroke-dasharray="6 4"/>
+        <text x="604" y="38" text-anchor="middle" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="9">LAN — 192.168.50.0/24 (Host-Only)</text>
+
+        <!-- VM-WEB (victime) -->
+        <rect x="412" y="50" width="168" height="90" rx="9" fill="rgba(255,145,0,.08)" stroke="rgba(255,145,0,.3)" stroke-width="1.5"/>
+        <text x="496" y="76" text-anchor="middle" fill="#ff9100" font-family="Syne,sans-serif" font-size="13" font-weight="700">VM-WEB</text>
+        <text x="496" y="93" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">192.168.50.10</text>
+        <text x="496" y="108" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Apache · DVWA · SSH</text>
+        <text x="496" y="124" text-anchor="middle" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="8">Wazuh-agent · Filebeat</text>
+
+        <!-- VM-SIEM -->
+        <rect x="412" y="164" width="168" height="86" rx="9" fill="rgba(77,166,255,.08)" stroke="rgba(77,166,255,.35)" stroke-width="1.5"/>
+        <text x="496" y="190" text-anchor="middle" fill="#4da6ff" font-family="Syne,sans-serif" font-size="13" font-weight="700">VM-SIEM</text>
+        <text x="496" y="207" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">192.168.50.100</text>
+        <text x="496" y="222" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Elasticsearch :9200</text>
+        <text x="496" y="237" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Kibana :5601 · Wazuh-manager</text>
+
+        <!-- Wazuh arrow web→siem -->
+        <line x1="496" y1="140" x2="496" y2="162" stroke="#b388ff" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#lt2)"/>
+        <text x="510" y="153" fill="#b388ff" font-family="JetBrains Mono,monospace" font-size="8">Wazuh</text>
+
+        <!-- Filebeat arrow web→siem -->
+        <line x1="560" y1="140" x2="580" y2="164" stroke="#00e676" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#lt2)"/>
+        <text x="600" y="153" fill="#00e676" font-family="JetBrains Mono,monospace" font-size="8">Filebeat</text>
+
+        <!-- pfSense syslog → SIEM -->
+        <line x1="348" y1="180" x2="410" y2="210" stroke="#ff9100" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#lt1)"/>
+        <text x="367" y="200" fill="#ff9100" font-family="JetBrains Mono,monospace" font-size="7" text-anchor="middle">syslog :514</text>
+
+        <!-- Analyste -->
+        <rect x="620" y="80" width="180" height="100" rx="9" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+        <text x="710" y="110" text-anchor="middle" fill="#dde6f0" font-family="Syne,sans-serif" font-size="22">👤</text>
+        <text x="710" y="134" text-anchor="middle" fill="#dde6f0" font-family="Syne,sans-serif" font-size="13" font-weight="700">Analyste SOC</text>
+        <text x="710" y="150" text-anchor="middle" fill="#8099b8" font-family="JetBrains Mono,monospace" font-size="8">Kibana :5601</text>
+        <text x="710" y="165" text-anchor="middle" fill="#4da6ff" font-family="JetBrains Mono,monospace" font-size="8">Vous !</text>
+        <line x1="580" y1="207" x2="618" y2="140" stroke="#4da6ff" stroke-width="1.5" marker-end="url(#lt1)"/>
+
+        <!-- Légende -->
+        <line x1="412" y1="258" x2="440" y2="258" stroke="#4da6ff" stroke-width="1.5"/>
+        <text x="446" y="262" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Trafic LAN</text>
+        <line x1="512" y1="258" x2="540" y2="258" stroke="#ff5252" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <text x="546" y="262" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Trafic attaquant</text>
+        <line x1="630" y1="258" x2="658" y2="258" stroke="#00e676" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <text x="664" y="262" fill="#3d5070" font-family="JetBrains Mono,monospace" font-size="8">Flux logs/agents</text>
+      </svg>
+    </div>
+    <div class="vm-grid">
+      <div class="vmc"><div class="vmi">🛡️</div><div class="vmn">VM-PFSENSE</div><div class="vmr">pfSense + Suricata IDS<br>Gateway WAN→LAN</div><div class="vms">512 Mo · FreeBSD<br>2 interfaces réseau</div></div>
+      <div class="vmc"><div class="vmi">🎯</div><div class="vmn">VM-WEB</div><div class="vmr">Apache + DVWA<br>Wazuh Agent · Filebeat<br>cible de l'attaque</div><div class="vms">1 Go · Ubuntu 22.04<br>192.168.50.10</div></div>
+      <div class="vmc"><div class="vmi">🔵</div><div class="vmn">VM-SIEM</div><div class="vmr">Elasticsearch + Kibana<br>Wazuh Manager<br>Filebeat</div><div class="vms">4 Go · Ubuntu 22.04<br>192.168.50.100</div></div>
+      <div class="vmc"><div class="vmi">⚔️</div><div class="vmn">VM-KALI</div><div class="vmr">Red Team<br>nmap · Hydra · sqlmap<br>WAN uniquement</div><div class="vms">2 Go · Kali 2024<br>Interface NAT</div></div>
+    </div>
+  </div>
+
+  <!-- Étapes TP -->
+  <h3 class="sub">Étapes du lab</h3>
+  <div class="stp" id="stp-tp">
+    <div class="stp-nav">
+      <button class="stp-btn on" onclick="sStep('stp-tp',0)">Étape 1</button>
+      <button class="stp-btn" onclick="sStep('stp-tp',1)">Étape 2</button>
+      <button class="stp-btn" onclick="sStep('stp-tp',2)">Étape 3</button>
+      <button class="stp-btn" onclick="sStep('stp-tp',3)">Étape 4</button>
+      <button class="stp-btn" onclick="sStep('stp-tp',4)">Étape 5</button>
+      <button class="stp-btn" onclick="sStep('stp-tp',5)">Étape 6</button>
+    </div>
+    <div class="stp-body">
+      <div class="stp-panel on">
+        <h4>⚙️ Étape 1 — pfSense + Suricata (30 min)</h4>
+        <p>Installer pfSense sur la VM à 2 interfaces. Accéder à la WebGUI <code>http://192.168.50.1</code> (admin/pfsense). Installer le package Suricata depuis System → Package Manager.</p>
+        <div class="cb"><div class="ch"><span class="cl">pfSense WebGUI</span><span class="cf">Services → Suricata → Global Settings</span></div>
+<pre><span class="cm"># Règles gratuite Emerging Threats Open</span>
+<span class="va">ETOpen Rules</span>       : <span class="op">✓ Enable</span>
+<span class="va">Update Interval</span>    : 1 day
+
+<span class="cm"># Interface WAN → Add</span>
+<span class="va">Interface</span>          : WAN
+<span class="va">EVE JSON Log</span>       : <span class="op">✓ Enable</span>
+<span class="va">EVE Output types</span>   : alert, http, dns, tls, flow
+<span class="va">Block Offenders</span>    : <span class="op">✗ NON</span>   <span class="cm"># IDS passif Séance 1 !</span>
+
+<span class="cm"># Rules → cocher les catégories SecureBank :</span>
+<span class="op">✓</span> emerging-scan            <span class="cm"># détecte Nmap</span>
+<span class="op">✓</span> emerging-exploit         <span class="cm"># détecte exploits</span>
+<span class="op">✓</span> emerging-web_server      <span class="cm"># détecte attaques web</span>
+<span class="op">✓</span> emerging-sql             <span class="cm"># détecte SQLi</span>
+<span class="op">✓</span> emerging-dos             <span class="cm"># détecte DDoS</span></pre></div>
+        <div class="callout ci-ok"><div class="ci">✅</div><div><h4>Vérification</h4><p>Dans Services → Suricata → Logs View : des entrées s'affichent. Le fichier <code>/var/log/suricata/suricata_WAN*/eve.json</code> existe et est non vide. Ping depuis VM-WEB vers pfSense = réponse.</p></div></div>
+      </div>
+
+      <div class="stp-panel">
+        <h4>🔵 Étape 2 — Stack Elastic sur VM-SIEM (25 min)</h4>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-SIEM — Ubuntu 22.04</span></div>
+<pre><span class="cm"># Dépôt Elastic 8.x</span>
+<span class="fn">wget</span> <span class="op">-qO -</span> https://artifacts.elastic.co/GPG-KEY-elasticsearch \
+  | <span class="fn">gpg</span> <span class="op">--dearmor -o</span> /usr/share/keyrings/elastic-keyring.gpg
+
+<span class="kw">echo</span> <span class="st">"deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] \
+  https://artifacts.elastic.co/packages/8.x/apt stable main"</span> \
+  | <span class="fn">tee</span> /etc/apt/sources.list.d/elastic-8.x.list
+
+<span class="fn">apt update</span> <span class="op">&&</span> <span class="fn">apt install</span> <span class="op">-y</span> elasticsearch kibana filebeat
+
+<span class="cm"># Config Elasticsearch (lab : sécurité désactivée)</span>
+<span class="kw">cat</span> <span class="op">>></span> /etc/elasticsearch/elasticsearch.yml <span class="op"><<</span> <span class="st">EOF</span>
+network.host: 0.0.0.0
+http.port: 9200
+xpack.security.enabled: false
+cluster.name: securebank-soc
+<span class="st">EOF</span>
+
+<span class="cm"># Config Kibana</span>
+<span class="kw">cat</span> <span class="op">>></span> /etc/kibana/kibana.yml <span class="op"><<</span> <span class="st">EOF</span>
+server.host: "0.0.0.0"
+server.port: 5601
+elasticsearch.hosts: ["http://localhost:9200"]
+<span class="st">EOF</span>
+
+<span class="fn">systemctl enable</span> <span class="op">--now</span> elasticsearch kibana
+
+<span class="cm"># Attendre ~60s puis tester</span>
+<span class="fn">curl</span> <span class="op">-s</span> http://localhost:9200/_cluster/health?pretty
+<span class="cm"># → "status" : "green"</span></pre></div>
+        <div class="callout ci-danger"><div class="ci">🚨</div><div><h4>Production vs Lab</h4><p><code>xpack.security.enabled: false</code> est <strong>uniquement pour ce lab isolé</strong>. En production SecureBank SA, Elasticsearch doit avoir TLS + authentification + rôles. La DNSSI (Direction de la Sécurité des Systèmes d'Information) le sanctionnerait immédiatement en audit.</p></div></div>
+      </div>
+
+      <div class="stp-panel">
+        <h4>📦 Étape 3 — Filebeat : collecte Suricata + syslog (20 min)</h4>
+        <p>Configurer pfSense pour envoyer ses syslog vers VM-SIEM, puis configurer Filebeat pour les recevoir.</p>
+        <div class="cb"><div class="ch"><span class="cl">pfSense WebGUI</span><span class="cf">Status → System Logs → Settings</span></div>
+<pre><span class="va">Enable Remote Logging</span>  : <span class="op">✓</span>
+<span class="va">Remote Log Server</span>      : <span class="st">192.168.50.100</span>   <span class="cm"># VM-SIEM</span>
+<span class="va">Remote Syslog Port</span>     : <span class="nu">514</span>
+<span class="va">Syslog Contents</span>        : <span class="op">✓</span> Firewall Events, General</pre></div>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-SIEM — Filebeat</span></div>
+<pre><span class="cm"># Activer les modules</span>
+<span class="fn">filebeat modules enable</span> suricata apache nginx system
+
+<span class="cm"># Éditer /etc/filebeat/filebeat.yml</span>
+<span class="cm"># Ajouter l'input syslog pour pfSense :</span>
+<span class="va">filebeat.inputs</span>:
+  - <span class="va">type</span>: syslog
+    <span class="va">protocol.udp.host</span>: <span class="st">"0.0.0.0:514"</span>
+    <span class="va">tags</span>: [<span class="st">"pfsense"</span>, <span class="st">"securebank-fw"</span>]
+
+<span class="va">output.elasticsearch</span>:
+  <span class="va">hosts</span>: [<span class="st">"localhost:9200"</span>]
+  <span class="va">index</span>: <span class="st">"securebank-%{[agent.name]}-%{+yyyy.MM.dd}"</span>
+
+<span class="cm"># Charger les dashboards et démarrer</span>
+<span class="fn">filebeat setup</span>
+<span class="fn">systemctl enable</span> <span class="op">--now</span> filebeat
+
+<span class="cm"># Vérifier que les docs arrivent</span>
+<span class="fn">curl</span> <span class="st">"http://localhost:9200/_cat/indices?v"</span>
+<span class="cm"># securebank-filebeat-* doit avoir docs.count > 0</span></pre></div>
+      </div>
+
+      <div class="stp-panel">
+        <h4>🤖 Étape 4 — Wazuh Manager + Agent (20 min)</h4>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-SIEM — Wazuh Manager</span></div>
+<pre><span class="cm"># Dépôt Wazuh 4.x</span>
+<span class="fn">curl</span> <span class="op">-s</span> https://packages.wazuh.com/key/GPG-KEY-WAZUH | <span class="fn">apt-key add</span> -
+<span class="kw">echo</span> <span class="st">"deb https://packages.wazuh.com/4.x/apt/ stable main"</span> \
+  | <span class="fn">tee</span> /etc/apt/sources.list.d/wazuh.list
+<span class="fn">apt update</span> <span class="op">&&</span> <span class="fn">apt install</span> <span class="op">-y</span> wazuh-manager
+<span class="fn">systemctl enable</span> <span class="op">--now</span> wazuh-manager
+
+<span class="cm"># Intégration Wazuh → Elasticsearch (dans ossec.conf)</span>
+<span class="kw">cat</span> <span class="op">>></span> /var/ossec/etc/ossec.conf <span class="op"><<</span> <span class="st">'EOF'</span>
+&lt;integration&gt;
+  &lt;name&gt;elastic&lt;/name&gt;
+  &lt;hook_url&gt;http://localhost:9200&lt;/hook_url&gt;
+  &lt;alert_format&gt;json&lt;/alert_format&gt;
+&lt;/integration&gt;
+<span class="st">EOF</span>
+<span class="fn">systemctl restart</span> wazuh-manager</pre></div>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-WEB — Agent Wazuh</span></div>
+<pre><span class="cm"># Même dépôt, installer l'agent</span>
+<span class="fn">curl</span> <span class="op">-s</span> https://packages.wazuh.com/key/GPG-KEY-WAZUH | <span class="fn">apt-key add</span> -
+<span class="kw">echo</span> <span class="st">"deb https://packages.wazuh.com/4.x/apt/ stable main"</span> \
+  | <span class="fn">tee</span> /etc/apt/sources.list.d/wazuh.list
+<span class="fn">apt update</span>
+
+<span class="va">WAZUH_MANAGER</span>=<span class="st">"192.168.50.100"</span> <span class="va">WAZUH_AGENT_NAME</span>=<span class="st">"web01-securebank"</span> \
+  <span class="fn">apt install</span> <span class="op">-y</span> wazuh-agent
+<span class="fn">systemctl enable</span> <span class="op">--now</span> wazuh-agent
+
+<span class="cm"># Vérification sur VM-SIEM</span>
+<span class="fn">/var/ossec/bin/agent_control</span> <span class="op">-l</span>
+<span class="cm"># → ID:001 web01-securebank Active ✓</span></pre></div>
+      </div>
+
+      <div class="stp-panel">
+        <h4>⚔️ Étape 5 — Simulation attaque SecureBank (20 min)</h4>
+        <div class="callout ci-danger"><div class="ci">⚖️</div><div><h4>Rappel éthique et légal</h4><p>Ces commandes ciblent <strong>exclusivement les VMs de votre lab personnel isolé</strong>. Exécuter ces outils sur des systèmes tiers sans autorisation constitue une infraction pénale (Code pénal marocain, loi 07-03 sur les systèmes informatiques). Dans un contexte professionnel, un pentest nécessite un contrat et un périmètre signé.</p></div></div>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-KALI — Phase 1 : Reconnaissance (Suricata → emerging-scan)</span></div>
+<pre><span class="cm"># Scan complet — déclenche ET SCAN Nmap OS Detection</span>
+<span class="fn">nmap</span> <span class="op">-sV -sC -O -p-</span> 192.168.50.10
+
+<span class="cm"># Scan de vulnérabilités web — déclenche ET WEB Nikto</span>
+<span class="fn">nikto</span> <span class="op">-h</span> http://192.168.50.10
+
+<span class="cm"># → Observer dans Kibana : Security → Alerts</span>
+<span class="cm"># → Catégorie suricata.eve.alert.category: "attempted-recon"</span></pre></div>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-KALI — Phase 2 : Brute-force SSH (Wazuh → Règle 5712)</span></div>
+<pre><span class="cm"># Brute-force SSH — Wazuh alerte après 8 échecs</span>
+<span class="fn">hydra</span> <span class="op">-l</span> admin <span class="op">-P</span> /usr/share/wordlists/rockyou.txt \
+      <span class="op">-t 4 -f</span> ssh://192.168.50.10
+
+<span class="cm"># → Kibana : rule.id:5712 "SSH brute force attack"</span>
+<span class="cm"># → même source.ip que le scan Nmap → corrélation !</span></pre></div>
+        <div class="cb"><div class="ch"><span class="cl">bash</span><span class="cf">VM-KALI — Phase 3 : Injection SQL sur DVWA (Suricata → ET SQL)</span></div>
+<pre><span class="cm"># Installer DVWA sur VM-WEB d'abord (Apache + PHP + MySQL)</span>
+<span class="cm"># Mettre le security level à "low" dans l'interface DVWA</span>
+
+<span class="cm"># Test injection SQL — déclenche ET SQL SQLi</span>
+<span class="fn">sqlmap</span> <span class="op">-u</span> <span class="st">"http://192.168.50.10/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit"</span> \
+       <span class="op">--cookie</span>=<span class="st">"security=low;PHPSESSID=VOTRE_SESSION"</span> \
+       <span class="op">--dbs --batch</span>
+
+<span class="cm"># → Kibana alerte: ET SQL SQL Injection Attack (severity: 1)</span></pre></div>
+        <div class="callout ci-ok"><div class="ci">✅</div><div><h4>Résultats attendus dans Kibana Security → Alerts</h4><ul><li>Alerte Suricata <code>ET SCAN Nmap</code> — sévérité High</li><li>Alerte Wazuh <code>SSH brute force (rule 5712)</code> — sévérité Critical</li><li>Alerte Suricata <code>ET SQL SQLi</code> — sévérité Critical</li><li>Toutes depuis <code>source.ip</code> identique → corrélation visible en Timeline</li></ul></div></div>
+      </div>
+
+      <div class="stp-panel">
+        <h4>📊 Étape 6 — Règle EQL + Dashboard SOC (15 min)</h4>
+        <p>Créer dans Kibana une règle de détection qui reconnaît automatiquement la kill chain SecureBank.</p>
+        <div class="cb"><div class="ch"><span class="cl">EQL</span><span class="cf">Kibana → Security → Rules → Create → Event Correlation</span></div>
+<pre><span class="cm">/* Règle : Détection Kill Chain SecureBank
+   Déclenchement : SSH brute-force PUIS SQLi depuis même IP en 30 min */</span>
+
+<span class="kw">sequence</span> <span class="op">by</span> source.ip <span class="op">with</span> maxspan=<span class="nu">30m</span>
+
+  <span class="cm">/* Phase 1 : brute-force SSH */</span>
+  [authentication <span class="kw">where</span> event.outcome == <span class="st">"failure"</span>
+   <span class="op">and</span> destination.port == <span class="nu">22</span>]
+
+  [authentication <span class="kw">where</span> event.outcome == <span class="st">"failure"</span>
+   <span class="op">and</span> destination.port == <span class="nu">22</span>]
+
+  [authentication <span class="kw">where</span> event.outcome == <span class="st">"failure"</span>
+   <span class="op">and</span> destination.port == <span class="nu">22</span>]
+
+  <span class="cm">/* Phase 2 : tentative SQLi sur l'API */</span>
+  [network <span class="kw">where</span> event.module == <span class="st">"suricata"</span>
+   <span class="op">and</span> suricata.eve.alert.category <span class="op">like</span> <span class="st">"*sql*"</span>]</pre></div>
+        <div class="cb"><div class="ch"><span class="cl">Paramètres</span><span class="cf">Kibana Rule Settings</span></div>
+<pre><span class="va">Name</span>         : SecureBank — Kill Chain Recon+BF+SQLi
+<span class="va">Severity</span>     : Critical
+<span class="va">Risk Score</span>   : 95
+<span class="va">MITRE</span>        : T1046, T1110.001, T1190
+<span class="va">Schedule</span>     : Every 5 min / Last 35 min
+<span class="va">Actions</span>      : (Séance 3 — Shuffle SOAR : blocage pfSense auto)</pre></div>
+        <div class="callout ci-ok"><div class="ci">🏆</div><div><h4>SOC SecureBank opérationnel !</h4><p>Relancez les 3 phases d'attaque depuis Kali. En moins de 5 minutes, l'alerte "SecureBank — Kill Chain" doit apparaître dans Kibana Security → Alerts avec sévérité Critical. C'est exactement ce qu'un SOC bancaire réel devrait détecter.</p></div></div>
+      </div>
+    </div>
+    <div class="stp-foot">
+      <button class="btn btn-g" onclick="sPrev('stp-tp')">← Précédent</button>
+      <div><div class="dots" id="stp-tp-d"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="scnt" id="stp-tp-c">1 / 6</div></div>
+      <button class="btn btn-p" onclick="sNext('stp-tp')">Suivant →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ QUIZ ═══ -->
+<div class="sec" id="quiz">
+  <div class="sec-hd"><span class="sec-n">04</span><h2 class="sec-t">Quiz Interactif — 10 questions</h2></div>
+  <div class="callout ci-info"><div class="ci">🎮</div><div><h4>Règles</h4><p>Toutes les questions sont basées sur le scénario SecureBank et la théorie vue en cours. Une seule tentative par question. Résultat et explication immédiate après chaque réponse.</p></div></div>
+
+  <div class="quiz">
+    <div class="qhdr"><h3>Quiz Séance 1 — SOC & SIEM</h3><div class="qscore" id="qs">Score : 0 / 10</div></div>
+    <div class="qprogwrap"><div class="qprog" id="qp"></div></div>
+    <div class="qbody">
+
+      <div class="qpanel on" id="qq0">
+        <div class="qnum">Question 1 / 10</div>
+        <div class="qtxt">L'attaquant de SecureBank effectue un scan Nmap à 06h47, un brute-force SSH à 07h03, et une injection SQL à 07h15 — toujours depuis 185.220.101.47. Comment appelle-t-on la détection de ce pattern complet par le SIEM ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(0,0,false)"><span class="ql">A</span>Threat Intelligence</button>
+          <button class="qopt" onclick="ans(0,1,false)"><span class="ql">B</span>Log Analysis</button>
+          <button class="qopt" onclick="ans(0,2,true)"><span class="ql">C</span>Corrélation d'événements — relier plusieurs logs pour détecter une kill chain</button>
+          <button class="qopt" onclick="ans(0,3,false)"><span class="ql">D</span>Normalisation ECS</button>
+        </div>
+        <div class="qfb" id="qf0"></div>
+      </div>
+
+      <div class="qpanel" id="qq1">
+        <div class="qnum">Question 2 / 10</div>
+        <div class="qtxt">Suricata détecte le scan Nmap et génère une alerte. Dans le scénario SecureBank, pourquoi le portail web reçoit-il quand même les paquets de l'attaquant malgré Suricata ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(1,0,false)"><span class="ql">A</span>Suricata n'est pas configuré pour analyser le port 80</button>
+          <button class="qopt" onclick="ans(1,1,true)"><span class="ql">B</span>Suricata est en mode IDS passif — il alerte sans bloquer. Le paquet traverse quand même pfSense</button>
+          <button class="qopt" onclick="ans(1,2,false)"><span class="ql">C</span>pfSense n'applique pas les règles Suricata en temps réel</button>
+          <button class="qopt" onclick="ans(1,3,false)"><span class="ql">D</span>L'attaquant utilise un protocole non couvert par Suricata</button>
+        </div>
+        <div class="qfb" id="qf1"></div>
+      </div>
+
+      <div class="qpanel" id="qq2">
+        <div class="qnum">Question 3 / 10</div>
+        <div class="qtxt">Wazuh détecte le brute-force SSH sur web01-securebank (192.168.50.10). Quelle est la différence fondamentale entre Wazuh et Suricata dans cette détection ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(2,0,false)"><span class="ql">A</span>Suricata est open-source, Wazuh est commercial</button>
+          <button class="qopt" onclick="ans(2,1,true)"><span class="ql">B</span>Wazuh est un HIDS (surveille l'intérieur du serveur via auth.log), Suricata est un NIDS (surveille le trafic réseau au niveau du firewall)</button>
+          <button class="qopt" onclick="ans(2,2,false)"><span class="ql">C</span>Wazuh analyse le trafic réseau, Suricata analyse les logs système</button>
+          <button class="qopt" onclick="ans(2,3,false)"><span class="ql">D</span>Il n'y a pas de différence, ce sont deux outils équivalents</button>
+        </div>
+        <div class="qfb" id="qf2"></div>
+      </div>
+
+      <div class="qpanel" id="qq3">
+        <div class="qnum">Question 4 / 10</div>
+        <div class="qtxt">En contexte bancaire SecureBank, pourquoi active-t-on Suricata en mode IDS (passif) et non IPS (inline) dès le départ ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(3,0,false)"><span class="ql">A</span>pfSense ne supporte pas le mode IPS</button>
+          <button class="qopt" onclick="ans(3,1,false)"><span class="ql">B</span>L'IPS est moins performant que l'IDS sur pfSense</button>
+          <button class="qopt" onclick="ans(3,2,true)"><span class="ql">C</span>Un faux positif en IPS pourrait bloquer un virement bancaire légitime — inacceptable. On doit d'abord observer et affiner les règles pendant 2 séances</button>
+          <button class="qopt" onclick="ans(3,3,false)"><span class="ql">D</span>L'IPS nécessite une licence commerciale Suricata</button>
+        </div>
+        <div class="qfb" id="qf3"></div>
+      </div>
+
+      <div class="qpanel" id="qq4">
+        <div class="qnum">Question 5 / 10</div>
+        <div class="qtxt">L'attaquant de SecureBank provient de 185.220.101.47 — un nœud Tor (Pays-Bas). Après avoir qualifié cette alerte, quel est le délai maximum pour notifier Bank Al-Maghrib en cas de violation confirmée de données bancaires ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(4,0,false)"><span class="ql">A</span>24 heures</button>
+          <button class="qopt" onclick="ans(4,1,true)"><span class="ql">B</span>72 heures — délai standard réglementaire (équivalent DORA/RGPD bancaire)</button>
+          <button class="qopt" onclick="ans(4,2,false)"><span class="ql">C</span>7 jours</button>
+          <button class="qopt" onclick="ans(4,3,false)"><span class="ql">D</span>Aucun délai légal au Maroc</button>
+        </div>
+        <div class="qfb" id="qf4"></div>
+      </div>
+
+      <div class="qpanel" id="qq5">
+        <div class="qnum">Question 6 / 10</div>
+        <div class="qtxt">Dans Kibana, vous cherchez tous les événements liés à l'attaquant SecureBank sur toutes les sources (Suricata, Wazuh, Apache). Quelle requête KQL utilisez-vous ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(5,0,false)"><span class="ql">A</span><code>ip_source = "185.220.101.47"</code></button>
+          <button class="qopt" onclick="ans(5,1,true)"><span class="ql">B</span><code>source.ip: "185.220.101.47"</code> — champ ECS uniforme toutes sources</button>
+          <button class="qopt" onclick="ans(5,2,false)"><span class="ql">C</span><code>suricata.src_ip: "185.220.101.47"</code></button>
+          <button class="qopt" onclick="ans(5,3,false)"><span class="ql">D</span><code>network.ip: "185.220.101.47"</code></button>
+        </div>
+        <div class="qfb" id="qf5"></div>
+      </div>
+
+      <div class="qpanel" id="qq6">
+        <div class="qnum">Question 7 / 10</div>
+        <div class="qtxt">Kibana génère 380 alertes en une heure suite à l'attaque SecureBank. Parmi elles : 1 alerte "SQLi sur /api/login" (Critical), 200 alertes "DNS query depuis 8.8.8.8" (Low), 12 alertes "SSH brute-force" (Critical). Par quoi commencez-vous ?</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(6,0,false)"><span class="ql">A</span>La plus ancienne alerte pour respecter l'ordre chronologique</button>
+          <button class="qopt" onclick="ans(6,1,false)"><span class="ql">B</span>Les 200 alertes DNS — le plus grand nombre</button>
+          <button class="qopt" onclick="ans(6,2,true)"><span class="ql">C</span>SQLi Critical — l'API de paiement est directement exposée, risque de compromission de données financières immédiate</button>
+          <button class="qopt" onclick="ans(6,3,false)"><span class="ql">D</span>Les 12 SSH brute-force — car il y en a plus que le SQLi</button>
+        </div>
+        <div class="qfb" id="qf6"></div>
+      </div>
+
+      <div class="qpanel" id="qq7">
+        <div class="qnum">Question 8 / 10</div>
+        <div class="qtxt">L'alerte Suricata "GPL DNS Query" se déclenche 200 fois pour l'IP 8.8.8.8. En tant qu'analyste Tier 1 de SecureBank, vous la classifiez comme :</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(7,0,false)"><span class="ql">A</span>Vrai positif — une IP étrangère accède au DNS interne</button>
+          <button class="qopt" onclick="ans(7,1,false)"><span class="ql">B</span>Incident P2 — escalade au Tier 2</button>
+          <button class="qopt" onclick="ans(7,2,true)"><span class="ql">C</span>Faux positif — 8.8.8.8 est le DNS public Google, trafic DNS normal. Whitelister cette règle pour cette source</button>
+          <button class="qopt" onclick="ans(7,3,false)"><span class="ql">D</span>Attaque DNS amplification — blocage immédiat</button>
+        </div>
+        <div class="qfb" id="qf7"></div>
+      </div>
+
+      <div class="qpanel" id="qq8">
+        <div class="qnum">Question 9 / 10</div>
+        <div class="qtxt">Dans la règle EQL créée pour SecureBank, le paramètre <code>maxspan=30m</code> signifie :</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(8,0,false)"><span class="ql">A</span>La règle s'exécute toutes les 30 minutes</button>
+          <button class="qopt" onclick="ans(8,1,false)"><span class="ql">B</span>L'alerte expire après 30 minutes si non acquittée</button>
+          <button class="qopt" onclick="ans(8,2,true)"><span class="ql">C</span>Les événements de la séquence doivent tous survenir dans une fenêtre de 30 minutes pour déclencher l'alerte</button>
+          <button class="qopt" onclick="ans(8,3,false)"><span class="ql">D</span>Kibana conserve les résultats de la règle pendant 30 minutes</button>
+        </div>
+        <div class="qfb" id="qf8"></div>
+      </div>
+
+      <div class="qpanel" id="qq9">
+        <div class="qnum">Question 10 / 10</div>
+        <div class="qtxt">Les 3 phases de l'attaque SecureBank (scan → brute-force → SQLi) correspondent dans MITRE ATT&amp;CK à :</div>
+        <div class="qopts">
+          <button class="qopt" onclick="ans(9,0,false)"><span class="ql">A</span>T1566 (Phishing) → T1078 (Valid Accounts) → T1071 (C2)</button>
+          <button class="qopt" onclick="ans(9,1,true)"><span class="ql">B</span>T1046 (Network Service Scanning) → T1110.001 (Brute Force) → T1190 (Exploit Public-Facing Application)</button>
+          <button class="qopt" onclick="ans(9,2,false)"><span class="ql">C</span>T1059 (Script) → T1053 (Scheduled Task) → T1005 (Data from Local System)</button>
+          <button class="qopt" onclick="ans(9,3,false)"><span class="ql">D</span>T1486 (Ransomware) → T1490 (Inhibit Recovery) → T1041 (Exfiltration)</button>
+        </div>
+        <div class="qfb" id="qf9"></div>
+      </div>
+
+      <div class="qres" id="qres">
+        <div class="qres-n" id="qres-n">0</div>
+        <div class="qres-l">points sur 10</div>
+        <div class="qres-m" id="qres-m"></div>
+        <button class="btn btn-p" onclick="rQuiz()" style="margin-top:18px">↺ Recommencer</button>
+      </div>
+    </div>
+    <div class="qnav" id="qnav">
+      <button class="btn btn-g" onclick="prevQ()" id="qprev" style="visibility:hidden">← Préc.</button>
+      <div class="dots" id="qdots">
+        <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <button class="btn btn-p" onclick="nextQ()" id="qnext" style="visibility:hidden">Suiv. →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ ÉVAL ═══ -->
+<div class="sec" id="eval">
+  <div class="sec-hd"><span class="sec-n">05</span><h2 class="sec-t">Évaluation</h2></div>
+  <div class="egrid">
+    <div class="ecard"><div class="epts">08</div><div class="elbl">Lab technique /8</div><div class="edesc">Stack complète opérationnelle · Suricata actif · Wazuh connecté · 3 phases d'attaque détectées dans Kibana · règle EQL créée</div></div>
+    <div class="ecard"><div class="epts">07</div><div class="elbl">Décision SOC /7</div><div class="edesc">Triage justifié · distinction vrai/faux positif · priorisation correcte · escalade appropriée</div></div>
+    <div class="ecard"><div class="epts">05</div><div class="elbl">Rapport IR /5</div><div class="edesc">Format PICERL · horodatage · IoC documentés · MITRE mapping · recommandations</div></div>
+  </div>
+  <div class="callout ci-info" style="margin-top:20px"><div class="ci">📋</div><div><h4>Prérequis Séance 2</h4><p>Conserver votre lab VM opérationnel. En Séance 2, vous ajouterez <strong>Splunk</strong> (corrélation SPL avancée) et <strong>Zabbix</strong> (supervision infrastructure bancaire) à la même infrastructure SecureBank SA. Les agents Wazuh et Filebeat déployés aujourd'hui seront réutilisés.</p></div></div>
+</div>
+
+</div><!-- wrap -->
+
+<div class="foot">
+  <span class="foot-logo">SOC LAB · EUROMED FÈS · CS</span>
+  <span>Cybersécurité Ingénierie · Séance 1/4 · SecureBank SA</span>
+  <span style="color:var(--acc)">pfSense · Suricata · Wazuh · Elastic · Kibana</span>
+</div>
+
+<script>
+// ── STEPPERS ──
+const S={};
+function sInit(id){
+  const el=document.getElementById(id);if(!el)return;
+  S[id]={cur:0,tot:el.querySelectorAll('.stp-panel').length};sUpd(id);
+}
+function sStep(id,i){
+  const el=document.getElementById(id);
+  el.querySelectorAll('.stp-panel').forEach((p,j)=>p.classList.toggle('on',j===i));
+  el.querySelectorAll('.stp-btn').forEach((b,j)=>b.classList.toggle('on',j===i));
+  S[id].cur=i;sUpd(id);
+}
+function sNext(id){const s=S[id];if(s.cur<s.tot-1)sStep(id,s.cur+1);}
+function sPrev(id){const s=S[id];if(s.cur>0)sStep(id,s.cur-1);}
+function sUpd(id){
+  const s=S[id];
+  const d=document.getElementById(id+'-d');
+  const c=document.getElementById(id+'-c');
+  if(d)d.querySelectorAll('.dot').forEach((x,i)=>x.classList.toggle('on',i===s.cur));
+  if(c)c.textContent=(s.cur+1)+' / '+s.tot;
+}
+
+// ── TABS ──
+function setTab(cid,i){
+  const el=document.getElementById(cid);
+  el.querySelectorAll('.tab-panel').forEach((p,j)=>p.classList.toggle('on',j===i));
+  el.previousElementSibling.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('on',j===i));
+}
+
+// ── QUIZ ──
+const FB=[
+  {ok:'✓ Correct ! La corrélation est la valeur centrale d\'un SIEM. Trois événements isolés (scan, brute-force, SQLi) semblent anodins. Corrélés sur la même IP en 28 minutes, ils révèlent une kill chain coordonnée.',ko:'✗ Incorrect. La Threat Intelligence identifie des IoC connus. La normalisation standardise les champs. La corrélation est ce qui permet de relier plusieurs événements pour détecter un pattern d\'attaque.'},
+  {ok:'✓ Exact ! En mode IDS passif, Suricata analyse une copie miroir du trafic. Il alerte mais ne bloque pas. Le paquet original continue vers le serveur. C\'est la définition du mode passif vs inline.',ko:'✗ Incorrect. Suricata analyse bien le port 80, et pfSense applique les règles. La raison est simple : en IDS passif, Suricata n\'est pas dans le chemin du trafic, il ne peut pas bloquer.'},
+  {ok:'✓ Parfait ! HIDS = Host-based IDS. Wazuh est installé sur le serveur et lit ses logs internes (auth.log). Suricata = NIDS, il inspecte le trafic réseau au niveau du firewall. Les deux sont complémentaires.',ko:'✗ Incorrect. C\'est exactement l\'inverse : Wazuh surveille l\'hôte (HIDS), Suricata surveille le réseau (NIDS). Cette distinction est fondamentale pour comprendre la défense en profondeur.'},
+  {ok:'✓ Exactement ! Dans un contexte bancaire, un faux positif en IPS peut bloquer un virement de 200 000 DH — conséquences financières et réglementaires immédiates. La séquence correcte est toujours : IDS → observation → tuning → IPS.',ko:'✗ Incorrect. pfSense supporte parfaitement l\'IPS, et Suricata est open-source. La vraie raison est le risque opérationnel : un faux positif en mode bloquant dans une banque peut avoir des conséquences légales et financières graves.'},
+  {ok:'✓ Correct ! 72 heures est le délai de notification standard pour les incidents de sécurité dans le secteur bancaire (aligné sur DORA en Europe, et les directives Bank Al-Maghrib). Le rapport d\'incident Tier 1 est donc une pièce réglementaire.',ko:'✗ Incorrect. Le délai de 24h est trop court et souvent irréaliste pour une investigation complète. 7 jours est trop long pour une banque. 72 heures est le standard reconnu, y compris dans les directives Bank Al-Maghrib.'},
+  {ok:'✓ Parfait ! L\'ECS (Elastic Common Schema) normalise le champ "IP source" en source.ip pour toutes les sources. Que l\'événement vienne de Suricata, Wazuh ou Apache, source.ip est toujours le même — c\'est l\'intérêt de la normalisation.',ko:'✗ Incorrect. Sans ECS, chaque source aurait son propre nom de champ (src_ip, client_ip, remote_addr...). ECS impose source.ip comme standard universel, permettant une requête unique sur toutes les sources.'},
+  {ok:'✓ Bonne décision ! La SQLi sur /api/login de l\'API paiement est la menace immédiate la plus grave : compromission potentielle de données financières de 300 000 clients. Le Tier 1 doit prioriser par impact métier, pas par volume d\'alertes.',ko:'✗ Incorrect. Les 200 alertes DNS sont probablement des faux positifs (trafic DNS normal). L\'ordre chronologique ne tient pas compte de l\'impact. La sévérité + l\'impact métier (API paiement bancaire) définissent la priorité.'},
+  {ok:'✓ Correct ! 8.8.8.8 est le résolveur DNS public de Google, utilisé par des millions de machines. C\'est un trafic DNS parfaitement normal. La règle Suricata est trop sensible — il faut la whitelister pour cette source.',ko:'✗ Incorrect. Bloquer 8.8.8.8 couperait la résolution DNS pour toute l\'infrastructure SecureBank — catastrophique. C\'est clairement un faux positif dû à une règle Suricata trop générique.'},
+  {ok:'✓ Exact ! maxspan dans EQL définit la fenêtre temporelle dans laquelle tous les événements de la séquence doivent se produire. Si le scan et le SQLi sont séparés de plus de 30 minutes, la règle ne se déclenche pas — ce qui évite les faux positifs sur des événements non liés.',ko:'✗ Incorrect. maxspan ne définit pas la fréquence d\'exécution (c\'est le Schedule), ni la durée de vie de l\'alerte, ni la durée de conservation. C\'est la fenêtre temporelle maximale pour que tous les événements de la séquence soient considérés liés.'},
+  {ok:'✓ Parfait ! T1046 (Network Service Scanning = Nmap), T1110.001 (Brute Force Password Guessing = Hydra SSH), T1190 (Exploit Public-Facing Application = SQLi sur l\'API). MITRE ATT&CK est le framework de référence que Kibana SIEM mappe automatiquement sur ses alertes.',ko:'✗ Incorrect. T1566 concerne le phishing, T1059 les scripts, T1486 les ransomwares. Les techniques de cette attaque SecureBank sont de la reconnaissance réseau (T1046), du brute-force (T1110.001) et de l\'exploitation web (T1190).'}
+];
+
+let qCur=0,qSc=0,qAns=Array(10).fill(false);
+
+function ans(qi,oi,ok){
+  if(qAns[qi])return;
+  qAns[qi]=true;
+  const panel=document.getElementById('qq'+qi);
+  const opts=panel.querySelectorAll('.qopt');
+  opts.forEach(o=>o.setAttribute('disabled',true));
+  opts[oi].classList.add(ok?'ok':'ko');
+  if(!ok)opts.forEach(o=>{if(o.onclick&&o.onclick.toString().includes(',true)'))o.classList.add('miss');});
+  if(ok)qSc++;
+  const fb=document.getElementById('qf'+qi);
+  fb.className='qfb show '+(ok?'ok':'ko');
+  fb.textContent=FB[qi][ok?'ok':'ko'];
+  document.getElementById('qs').textContent='Score : '+qSc+' / 10';
+  document.getElementById('qnext').style.visibility='visible';
+  updQD();
+}
+function nextQ(){
+  if(!qAns[qCur])return;
+  if(qCur<9){
+    document.getElementById('qq'+qCur).classList.remove('on');
+    qCur++;
+    document.getElementById('qq'+qCur).classList.add('on');
+    document.getElementById('qprev').style.visibility='visible';
+    document.getElementById('qnext').style.visibility=qAns[qCur]?'visible':'hidden';
+    if(qCur===9)document.getElementById('qnext').textContent='Résultat →';
+    updQD();
+  } else showRes();
+}
+function prevQ(){
+  if(qCur>0){
+    document.getElementById('qq'+qCur).classList.remove('on');
+    qCur--;
+    document.getElementById('qq'+qCur).classList.add('on');
+    if(qCur===0)document.getElementById('qprev').style.visibility='hidden';
+    document.getElementById('qnext').textContent='Suiv. →';
+    document.getElementById('qnext').style.visibility=qAns[qCur]?'visible':'hidden';
+    updQD();
+  }
+}
+function updQD(){
+  document.getElementById('qdots').querySelectorAll('.dot').forEach((d,i)=>{
+    d.classList.toggle('on',i===qCur);
+    if(qAns[i])d.style.background=i===qCur?'var(--acc)':'rgba(77,166,255,.35)';
+  });
+  document.getElementById('qp').style.width=((qCur+1)*10)+'%';
+}
+function showRes(){
+  document.querySelectorAll('.qpanel').forEach(p=>p.style.display='none');
+  document.getElementById('qnav').style.display='none';
+  document.getElementById('qres').classList.add('show');
+  const n=document.getElementById('qres-n');
+  n.textContent=qSc;
+  n.style.color=qSc>=8?'var(--grn)':qSc>=5?'var(--orn)':'var(--red)';
+  const msgs=['Revoyez attentivement la théorie et le scénario SecureBank. Retentez !','Des bases à consolider — relisez la théorie et refaites le quiz.','Bien ! L\'essentiel est acquis. Quelques points à revoir.','Très bien ! Vous êtes prêt pour opérer le SOC SecureBank.','Excellent ! Parfait analyste Tier 1. Prêt pour la Séance 2.'];
+  document.getElementById('qres-m').textContent=msgs[Math.min(Math.floor(qSc/2),4)];
+  document.getElementById('qp').style.width='100%';
+}
+function rQuiz(){
+  qCur=0;qSc=0;qAns=Array(10).fill(false);
+  document.querySelectorAll('.qpanel').forEach((p,i)=>{p.style.display='';p.classList.toggle('on',i===0);});
+  document.getElementById('qres').classList.remove('show');
+  document.getElementById('qnav').style.display='';
+  document.getElementById('qprev').style.visibility='hidden';
+  document.getElementById('qnext').style.visibility='hidden';
+  document.getElementById('qnext').textContent='Suiv. →';
+  document.getElementById('qs').textContent='Score : 0 / 10';
+  document.getElementById('qp').style.width='10%';
+  document.querySelectorAll('.qopt').forEach(o=>{o.removeAttribute('disabled');o.className='qopt';});
+  document.querySelectorAll('.qfb').forEach(f=>f.className='qfb');
+  updQD();
+}
+
+// ── NAV ACTIVE ──
+const secs=document.querySelectorAll('.sec');
+const navAs=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  secs.forEach(s=>{if(window.scrollY>=s.offsetTop-70)cur=s.id;});
+  navAs.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
+});
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  sInit('stp-siem');sInit('stp-elk');sInit('stp-tp');updQD();
+});
+</script>
+</body>
+</html>
