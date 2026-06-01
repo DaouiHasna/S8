@@ -1,0 +1,6 @@
+# NoSQL Security Project — Dépendances
+# Outils Python optionnels pour analyse et scripting
+
+MongoDB
+Node.js
+Docker

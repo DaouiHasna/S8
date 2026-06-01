@@ -1,0 +1,105 @@
+
+docker start mongo-noseclab
+docker exec -it mongo-noseclab mongosh
+use noseclab
+show dbs
+show collections
+db.security_logs.countDocuments()
+db.security_logs.findOne()
+exit
+
+docker rm -f mongo_insecure 2>/dev/null
+docker run -d --name mongo_insecure -p 27017:27017 mongo:7
+docker rm -f mongo_insecure
+docker run -d --name mongo_insecure -p 27018:27017 mongo:7
+docker exec -it mongo_insecure mongosh
+use soc_lite
+db.security_logs.insertOne({ timestamp: new Date(), source_ip: "10.0.0.99", event_type: "test_insecure", message: "Ce document a été inséré sans authentification" })
+db.security_logs.find({ event_type: "test_insecure" })
+db.adminCommand({ listDatabases: 1 })
+exit
+
+docker rm -f mongo_insecure
+docker run -d --name mongo_secure -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker rm -f mongo_secure
+docker run -d --name mongo_secure1 -p 127.0.0.1:27018:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker exec -it mongo_secure1 mongosh
+use soc_lite
+db.security_logs.find()
+exit
+
+docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin"
+db.adminCommand({ listDatabases: 1 })
+exit
+
+docker rm -f mongo_manual
+docker run -d --name mongo_manual -p 127.0.0.1:27018:27017 mongo:7 mongod --auth --bind_ip_all
+docker exec -it mongo_manual mongosh
+use admin
+db.createUser({ user: "adminSoc", pwd: "Passw0rd_S3cure!", roles: [{ role: "root", db: "admin" }] })
+exit
+
+docker exec -it mongo_manual mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin
+use soc_lite
+db.createUser({ user: "soc_app", pwd: "AppP@ss2024!", roles: [{ role: "readWrite", db: "soc_lite" }] })
+exit
+
+docker exec -it mongo_manual mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/soc_lite"
+docker exec -it mongo_manual mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/admin"
+
+docker rm -f mongo_secure1
+docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+docker exec -it mongo_secure1 mongosh -u adminSoc -p Passw0rd_S3cure! --authenticationDatabase admin
+show dbs
+use soc_lite
+db.security_logs.find()
+exit
+
+docker exec -it mongo_secure1 mongosh
+use soc_lite
+db.security_logs.find()
+quit()
+
+docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin"
+db.getUsers()
+use soc_lite
+db.security_logs.insertOne({ timestamp: new Date(), source_ip: "192.168.1.50", event_type: "auth_success", message: "Connexion admin vérifiée", severity: "info" })
+db.security_logs.find({ event_type: "auth_success" })
+quit()
+
+docker exec -it mongo_secure1 mongosh "mongodb://soc_app:AppP@ss2024!@localhost:27017/soc_lite"
+
+docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin --eval "use soc_lite; db.createRole({role:'incidentManager', privileges:[{resource:{db:'soc_lite',collection:'incidents'}, actions:['find','insert','update','remove']}], roles:[]});"
+
+docker exec -it mongo_secure1 mongosh "mongodb://adminSoc:Passw0rd_S3cure!@localhost:27017/admin" --eval "use soc_lite; db.security_logs.insertMany([...]); db.incidents.insertMany([...]); db.users.insertMany([...]);"
+
+docker rm -f mongo_secure1
+docker run -d --name mongo_secure1 -p 127.0.0.1:27017:27017 -e MONGO_INITDB_ROOT_USERNAME=adminSoc -e MONGO_INITDB_ROOT_PASSWORD=Passw0rd_S3cure! mongo:7
+
+docker exec -it mongo_secure1 mongosh -u adminSoc -p "Passw0rd_S3cure!" --authenticationDatabase admin
+use soc_lite
+db.security_logs.insertMany([...])
+db.incidents.insertMany([...])
+db.users.insertMany([...])
+db.createRole({ role: "incidentManager", privileges: [{ resource: { db: "soc_lite", collection: "incidents" }, actions: ["find", "insert", "update", "remove"] }], roles: [] })
+db.createUser({ user: "soc_app", pwd: "AppP@ss2026!", roles: [{ role: "readWrite", db: "soc_lite" }] })
+db.createUser({ user: "soc_analyst_ro", pwd: "AnalystR0@2026!", roles: [{ role: "read", db: "soc_lite" }] })
+db.createUser({ user: "soc_manager", pwd: "Mgr$ecure2026!", roles: [{ role: "incidentManager", db: "soc_lite" }] })
+db.getUsers()
+exit
+
+docker exec -it mongo_secure1 mongosh "mongodb://soc_analyst_ro:AnalystR0%402026!@localhost:27017/soc_lite?authSource=soc_lite" --eval "db.security_logs.find().limit(2); db.incidents.find({severity:'high'}); db.security_logs.insertOne({event_type:'test_write', message:'tentative'}); db.incidents.deleteOne({incident_id:'INC-2026-0042'}); db.users.find();"
+
+docker exec -it mongo_secure1 mongosh "mongodb://soc_manager:Mgr$ecure2026!@localhost:27017/soc_lite?authSource=soc_lite"
+db.incidents.find()
+db.incidents.updateOne({ incident_id: "INC-2026-0042" }, { $set: { status: "investigating", assigned_to: "manager_leroy" } })
+db.security_logs.find().limit(1)
+db.users.find()
+db.adminCommand({ listDatabases: 1 })
+exit
+
+docker exec -it mongo_secure1 mongosh "mongodb://soc_app:AppP@ss2026!@localhost:27017/soc_lite?authSource=soc_lite"
+db.security_logs.insertOne({ timestamp: new Date(), source_ip: "10.0.2.100", event_type: "firewall_drop", severity: "info", message: "Paquet TCP bloqué par règle DROP" })
+db.incidents.find({ status: "open" })
+db.users.find()
+db.adminCommand({ listDatabases: 1 })

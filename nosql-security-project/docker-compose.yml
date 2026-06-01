@@ -1,0 +1,64 @@
+version: "3.8"
+
+# ============================================================
+# NoSQL Security Project — Docker Compose
+# Environnements utilisés dans les TPs
+# ============================================================
+
+services:
+
+  # TP1 & TP2 — MongoDB de base (noseclab / soc_lite)
+  mongo-noseclab:
+    image: mongo:7
+    container_name: mongo-noseclab
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_noseclab_data:/data/db
+    restart: unless-stopped
+
+  # TP3 — MongoDB INSÉCURISÉ (sans authentification) — démonstration vulnérabilité
+  mongo-insecure:
+    image: mongo:7
+    container_name: mongo_insecure
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_insecure_data:/data/db
+    restart: unless-stopped
+    # NOTE: pas de --auth intentionnellement pour démontrer la vulnérabilité
+
+  # TP3 — MongoDB SÉCURISÉ (avec authentification + RBAC)
+  mongo-secure:
+    image: mongo:7
+    container_name: mongo_secure1
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_secure_data:/data/db
+    command: ["--auth"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: AdminSecure2026!
+    restart: unless-stopped
+
+volumes:
+  mongo_noseclab_data:
+  mongo_insecure_data:
+  mongo_secure_data:
+
+# ============================================================
+# USAGE :
+#
+# Lancer tous les services :
+#   docker-compose up -d
+#
+# Lancer uniquement un service :
+#   docker-compose up -d mongo-noseclab
+#
+# Arrêter :
+#   docker-compose down
+#
+# Arrêter et supprimer les volumes :
+#   docker-compose down -v
+# ============================================================
