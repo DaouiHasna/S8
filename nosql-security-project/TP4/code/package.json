@@ -1,0 +1,9 @@
+{
+  "name": "soc-api",
+  "version": "1.0.0",
+  "description": "TP4 - NoSQL Injection & Requetes Securisees",
+  "dependencies": {
+    "express": "^4.18.0",
+    "mongodb": "^6.3.0"
+  }
+}

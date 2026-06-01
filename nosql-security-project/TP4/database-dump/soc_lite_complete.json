@@ -1,0 +1,68 @@
+{
+  "database": "soc_lite",
+  "collections": {
+    "users": [
+      {
+        "_id": {
+          "$oid": "6a0ba665eacfbff4ad9df8a3"
+        },
+        "username": "alice",
+        "password": "motdepasse123",
+        "role": "analyst"
+      },
+      {
+        "_id": {
+          "$oid": "6a0ba665eacfbff4ad9df8a4"
+        },
+        "username": "bob",
+        "password": "secret456",
+        "role": "admin"
+      },
+      {
+        "_id": {
+          "$oid": "6a0ba665eacfbff4ad9df8a5"
+        },
+        "username": "carol",
+        "password": "carol789",
+        "role": "viewer"
+      }
+    ],
+    "security_logs": [
+      {
+        "_id": {
+          "$oid": "6a0ba66feacfbff4ad9df8a6"
+        },
+        "src_ip": "192.168.1.10",
+        "action": "login",
+        "status": "open",
+        "ts": {
+          "$date": "2026-05-18T23:53:19.231Z"
+        },
+        "password_hash": "HASH_FICTIF_SENSIBLE",
+        "internal_note": "ticket_17_confidentiel"
+      },
+      {
+        "_id": {
+          "$oid": "6a0ba66feacfbff4ad9df8a7"
+        },
+        "src_ip": "192.168.1.11",
+        "action": "logout",
+        "status": "closed",
+        "ts": {
+          "$date": "2026-05-18T23:53:19.231Z"
+        }
+      },
+      {
+        "_id": {
+          "$oid": "6a0ba66feacfbff4ad9df8a8"
+        },
+        "src_ip": "10.0.0.5",
+        "action": "alert",
+        "status": "investigating",
+        "ts": {
+          "$date": "2026-05-18T23:53:19.231Z"
+        }
+      }
+    ]
+  }
+}
