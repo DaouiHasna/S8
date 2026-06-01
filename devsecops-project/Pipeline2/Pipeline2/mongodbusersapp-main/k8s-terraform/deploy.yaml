@@ -1,0 +1,168 @@
+# ── Namespace ────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mongodb-app
+
+---
+# ── MongoDB Secret ───────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-secret
+  namespace: mongodb-app
+type: Opaque
+stringData:
+  uri: mongodb://admin:password123@mongo-service:27017/mongo-crud-app?authSource=admin
+
+---
+# ── GitLab Registry Secret ──────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-registry-secret
+  namespace: mongodb-app
+type: kubernetes.io/dockerconfigjson
+stringData:
+  .dockerconfigjson: |
+    {
+      "auths": {
+        "registry.gitlab.com": {
+          "username": "cyber2026",
+          "password": "YOUR_GITLAB_TOKEN",
+          "email": "you@example.com",
+          "auth": "BASE64(username:password)"
+        }
+      }
+    }
+
+---
+# ── MongoDB PersistentVolumeClaim ───────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: mongodb-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# ── MongoDB Deployment ──────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: mongodb-app
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:6
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: password123
+            - name: MONGO_INITDB_DATABASE
+              value: mongo-crud-app
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+
+---
+# ── MongoDB Service ─────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: mongodb-app
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+---
+# ── App Deployment ─────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-crud-app
+  namespace: mongodb-app
+  labels:
+    app: mongo-crud-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongo-crud-app
+  template:
+    metadata:
+      labels:
+        app: mongo-crud-app
+    spec:
+      containers:
+        - name: mongo-crud-app
+          image: registry.gitlab.com/cyber2026/mongodbusersapp/mongo-crud-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: uri
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+
+---
+# ── App Service ────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-crud-app-service
+  namespace: mongodb-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: mongo-crud-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

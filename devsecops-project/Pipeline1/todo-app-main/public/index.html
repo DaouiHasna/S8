@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo List</title>
+
+  <style>
+    /* Basic reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 50px;
+    }
+
+    .todo-container {
+      background: #fff;
+      padding: 25px 30px;
+      width: 350px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button.add-btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button.add-btn:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f6f6f6;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+
+    li:hover {
+      background: #eaeaea;
+    }
+
+    button.delete-btn {
+      background: #ff4d4f;
+      border: none;
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button.delete-btn:hover {
+      background: #c41c00;
+    }
+
+    /* Responsive */
+    @media (max-width: 400px) {
+      .todo-container {
+        width: 90%;
+        padding: 20px;
+      }
+
+      input[type="text"] {
+        font-size: 14px;
+      }
+
+      button.add-btn {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="todo-container">
+    <h1>Todo List</h1>
+
+    <div class="input-group">
+      <input type="text" id="taskInput" placeholder="Enter a new task">
+      <button class="add-btn" onclick="addTask()">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    const taskList = document.getElementById("taskList");
+    const input = document.getElementById("taskInput");
+
+    async function loadTasks() {
+      const res = await fetch("/tasks");
+      const tasks = await res.json();
+      taskList.innerHTML = "";
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span>${task.title}</span>
+          <button class="delete-btn" onclick="deleteTask(${task.id})">X</button>
+        `;
+        taskList.appendChild(li);
+      });
+    }
+
+    async function addTask() {
+      const title = input.value.trim();
+      if (!title) return;
+
+      await fetch("/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title })
+      });
+
+      input.value = "";
+      loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`/tasks/${id}`, { method: "DELETE" });
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+
+</body>
+</html>
